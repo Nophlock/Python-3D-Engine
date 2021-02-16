@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="example_images/iqm_example.png" width="250" title="Renders an IQM-File with an animation">
+  <img src="example_images/iqm_example.png" width="350" title="Renders an IQM-File with an animation">
 </p>
 
 # Disclaimer
