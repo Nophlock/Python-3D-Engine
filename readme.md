@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="example_images/iqm_example.png">
+  <img src="example_images/iqm_example.png" width="250" title="Renders an IQM-File with an animation">
 </p>
 
 # Disclaimer
@@ -11,10 +11,10 @@ MIT license (see license.md)
 
 
 ## Libraries
-- numpy (I use it at for some testing, maybe it's still at some places in the code :P)
+- numpy (I used it for some testing, maybe it's still at some places in the code :P)
 - ctypes
 - Pyglet
 - Python 3.91
 
-## RUN
-Just type in "python engine.py" and it should run. By default it will try to load "data/models/iqms/mrfixit/mrfixit.iqm" in the engine folder which is not provided in this repository, since I don't know if I'm allowed to. You can grab the Model from the [SDK](https://github.com/lsalzman/iqm) and place it at the named position.
+## Run
+Just type in "python engine.py" in the engine folder and it should run. By default it will try to load "data/models/iqms/mrfixit/mrfixit.iqm" in the engine folder which is not provided in this repository, since I don't know if I'm allowed to. You can grab the Model from the [SDK](https://github.com/lsalzman/iqm) and place it at the named position.
