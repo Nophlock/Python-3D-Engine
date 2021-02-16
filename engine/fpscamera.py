@@ -1,0 +1,80 @@
+
+from camera 		import Camera
+from quaternion		import Quaternion
+from vector3		import Vector3
+
+from pyglet.window import key
+from pyglet.window import mouse
+
+class FPSCamera(Camera):
+
+	def __init__(self, engine_ref):
+		super().__init__(engine_ref)
+
+		self.movement_speed	= 10.0
+		self.sensitive		= 0.01
+		self.sensitive_x	= 0.0
+		self.sensitive_y	= 0.0
+
+		self.key_mapper = self.engine.get_key_mapper()
+
+
+	def update(self, dt):
+		self.process_key_input(dt)
+		self.process_mouse_input(dt)
+
+	def process_key_input(self,dt):
+
+		if self.key_mapper.is_key_holded(key.W):
+
+			forward = self.getForwardVector()
+
+			self.setLocalPosition( self.position - forward * self.movement_speed * dt)
+
+		elif self.key_mapper.is_key_holded(key.S):
+
+			forward = self.getForwardVector()
+			self.setLocalPosition( self.position + forward * self.movement_speed * dt)
+
+
+		if self.key_mapper.is_key_holded(key.A):
+
+			sideward = self.getRightVector()
+			self.setLocalPosition( self.position - sideward * self.movement_speed * dt)
+		elif self.key_mapper.is_key_holded(key.D):
+
+			sideward = self.getRightVector()
+			self.setLocalPosition( self.position + sideward * self.movement_speed * dt)
+
+
+	def update_rotation_matrix(self):
+
+		y_axis = Quaternion.from_axis(Vector3.unitY()	, self.sensitive_x)
+		x_axis = Quaternion.from_axis(Vector3.unitX()	,-self.sensitive_y)
+
+		self.rotation = self.rotation * y_axis
+		self.rotation = x_axis * self.rotation
+		self.rotation.normalize()
+		self.rotation_matrix = self.rotation.to_matrix4()
+
+		self.need_update = True
+
+		self.sensitive_x = 0
+		self.sensitive_y = 0
+
+
+	def process_mouse_input(self, dt):
+
+
+		if self.key_mapper.is_key_holded("m_" + str(mouse.LEFT) ) :
+
+			dx,dy = self.key_mapper.get_mouse_relative_position()
+			self.engine.set_mouse_visible(False)
+
+			self.sensitive_x = dx * self.sensitive
+			self.sensitive_y = dy * self.sensitive
+
+			self.update_rotation_matrix()
+
+		if self.key_mapper.is_key_holded("m_" + str(mouse.RIGHT)):
+			print(self.get_mouse_direction())
