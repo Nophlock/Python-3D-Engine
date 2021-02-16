@@ -6,7 +6,7 @@
 # Disclaimer
 This is a small personal project to get back in some OpenGL-Development without the hassle to compile anything in C++ or anything else. It's small side project which can load IQM-Files and display the animations by using python and pyglet directly. It probably doesn't have a use case as a real engine since python is to slow for all the heavy math calculations (maybe if you use numpy instead of own classes). But anyway might be useful for someone who wants to understand the IQM-File or to get some understanding in 3D-Programming. Beside that I will probably update the code from time to time, if i want to expand it. Note that it isn't commented at all since it's only for me hobby-wise but I though that it could be useful for someone and I want to use git to keep track of my progress :P
 
-##License
+## License
 MIT license (see license.md)
 
 
