@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="example_images/iqm_example.png" width="350" title="Renders an IQM-File with an animation">
+  <img src="example_images/iqm_example.png" width="500" title="Renders an IQM-File with an animation">
 </p>
 
 # Disclaimer
@@ -17,4 +17,4 @@ MIT license (see license.md)
 - Python 3.91
 
 ## Run
-Just type in "python engine.py" in the engine folder and it should run. You can grab an IQM-Model to test things from the [SDK](https://github.com/lsalzman/iqm) and place it somewhere. You can use then the IQMLoader to load and display the model (for example just replace it in the scene_manager.py)
+Just type in "python engine.py" in the engine folder and it should run. You can grab an IQM-Model to test things from the [SDK](https://github.com/lsalzman/iqm) and place it somewhere. You can use it with the "IQMLoader"-Class to load and render the model (for example just replace it in the scene_manager.py)
