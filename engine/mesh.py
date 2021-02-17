@@ -1,5 +1,6 @@
 
 from mesh_buffer_object import MeshBufferObject
+from aabb import AABB
 from pyglet.gl import *
 
 class Mesh:
@@ -8,12 +9,19 @@ class Mesh:
 		self.name = name
 		self.materials = {}
 		self.anim_player = None
+		self.aabb = AABB()
 
 		self.mesh_buffer_object = MeshBufferObject()
 
 
-	def get_name():
+	def get_name(self):
 		return self.name
+
+	def set_aabb(self, aabb):
+		self.aabb = aabb
+
+	def get_aabb(self):
+		return self.aabb
 
 
 	def assign_animation_player(self, anim_player):
@@ -32,6 +40,8 @@ class Mesh:
 			if texture != None:
 				glEnable(texture["texture"].target)
 				glBindTexture(texture["texture"].target, texture["texture"].id)
+
+
 
 		self.mesh_buffer_object.render()
 

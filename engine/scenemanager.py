@@ -1,9 +1,9 @@
 
 from pyglet.gl 		import *
 from cube_mesh  	import CubeMeshLoader
-from obj_mesh  		import ObjMeshLoader
+from obj_mesh_loader import OBJMeshLoader
 from iqm_loader		import IQMLoader
-from normalshader	import NormalShader
+from normal_shader	import NormalShader
 from vector3		import Vector3
 from matrix4 		import Matrix4
 from transform 		import Transform
@@ -13,12 +13,6 @@ from texture_pool	import TexturePool
 
 import random
 import math
-
-"""
-from pyglet.gl import *
-glEnable(texture.target)        # typically target is GL_TEXTURE_2D
-glBindTexture(texture.target, texture.id)
-"""
 
 class SceneManager:
 
@@ -39,22 +33,19 @@ class SceneManager:
 
 	def create_test_scene(self):
 
-		self.loader = IQMLoader(self)
+		self.loader = OBJMeshLoader(self)#IQMLoader(self)
 
-		self.tests 		= self.loader.get_mesh("data/models/iqms/mrfixit/mrfixit.iqm")
-		self.shader		= NormalShader()
-		#self.chunk_mgr	= ChunkManager(self)
+		self.tests 	= self.loader.get_mesh("data/models/objs/multiple_meshes.obj")#self.loader.get_mesh("data/models/iqms/mrfixit/mrfixit.iqm")
+		self.shader	= NormalShader()
 
-
-		#self.attach_transform	= Transform()
-		self.transform			= Transform()
+		self.transform = Transform()
 
 		quat = Quaternion( Vector3(0.0, 0.0, -1.0), 3.141 * 0.5).get_axis_quaternion()
 		quat = quat * Quaternion( Vector3(0.0, -1.0, 0.0), 3.141 * 0.5).get_axis_quaternion()
 
 		self.transform.setLocalPosition  		( Vector3(0.0,-5.0,-10.0))
 		self.transform.setLocalRotation (quat.get_normalized() )
-		#self.attach_transform.setLocalPosition  ( Vector3(4.0,0.0,5.0))
+
 
 		if self.tests[0].has_animations():
 			anim_names = self.tests[0].get_animation_player().get_animation_names()
@@ -90,11 +81,11 @@ class SceneManager:
 
 		shader.bind()
 
-		shader.sendFloatValue	( shader.get_location("time")					, abs( math.sin( 0.0 ) / 2.0 ) + 0.5 )
-		shader.sendMatrix4		( shader.get_location("perspective_matrix")		, self.camera.get_perspective_matrix() )
-		shader.sendMatrix4		( shader.get_location("camera_matrix")			, self.camera.getTransformationMatrix() )
+		shader.send_float (shader.get_location("time") , abs( math.sin( 0.0 ) / 2.0 ) + 0.5 )
+		shader.send_matrix_4 (shader.get_location("perspective_matrix") , self.camera.get_perspective_matrix() )
+		shader.send_matrix_4 (shader.get_location("camera_matrix") , self.camera.getTransformationMatrix() )
 
-		shader.sendMatrix4( shader.get_location("transformation_matrix")	, self.transform.getTransformationMatrix()) #self.transform.getTransformationMatrix()
+		shader.send_matrix_4 (shader.get_location("transformation_matrix") , self.transform.getTransformationMatrix())
 
 
 		for i in range(len(self.tests)):
@@ -102,7 +93,7 @@ class SceneManager:
 			self.tests[i].render(self)
 
 
-		shader.un_bind()
+		shader.unbind()
 
 
 
@@ -110,7 +101,7 @@ class SceneManager:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
 		glEnable(GL_DEPTH_TEST)
-		glEnable(GL_CULL_FACE)
+		#glEnable(GL_CULL_FACE)
 
 	def set_active_camera(self, new_camera):
 		self.camera = new_camera

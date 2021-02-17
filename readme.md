@@ -17,4 +17,4 @@ MIT license (see license.md)
 - Python 3.91
 
 ## Run
-Just type in "python engine.py" in the engine folder and it should run. By default it will try to load "data/models/iqms/mrfixit/mrfixit.iqm" in the engine folder which is not provided in this repository, since I don't know if I'm allowed to. You can grab the Model from the [SDK](https://github.com/lsalzman/iqm) and place it at the named position.
+Just type in "python engine.py" in the engine folder and it should run. You can grab an IQM-Model to test things from the [SDK](https://github.com/lsalzman/iqm) and place it somewhere. You can use then the IQMLoader to load and display the model (for example just replace it in the scene_manager.py)

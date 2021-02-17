@@ -6,28 +6,28 @@ class Shader:
 	def __init__(self):
 		self.program = glCreateProgram()
 
-	def getFileContent(self, filename):
+	def get_file_content(self, filename):
 		return open(filename).read()
 
-	def logError(self, object, state):
+	def log_error(self, object, state):
 		length = c_int(0)
 		glGetProgramInfoLog(object, GL_OBJECT_INFO_LOG_LENGTH_ARB, byref(length))
 		log = create_string_buffer(length.value)
 
 		print('failed to ' + state + ' shader:\n%s' % log.value)
 
-	def addShader(self, type, shader_file):
-		shader 		= glCreateShader(type)
-		content		= self.getFileContent(shader_file)
+	def add_shader(self, type, shader_file):
+		shader = glCreateShader(type)
+		content	= self.get_file_content(shader_file)
 		ptr_content = cast(c_char_p(content.encode('utf-8')), POINTER(c_char))
 
-		glShaderSourceARB (shader, 1, byref(ptr_content), None)
+		glShaderSourceARB(shader, 1, byref(ptr_content), None)
 		glCompileShader(shader)
 
 		status = c_int(0)
 		glGetObjectParameterivARB(shader, GL_OBJECT_COMPILE_STATUS_ARB, byref(status))
 
-		if (status.value == 0):
+		if status.value == 0:
 
 			length = c_int(0)
 			glGetObjectParameterivARB(shader, GL_OBJECT_INFO_LOG_LENGTH_ARB, byref(length))
@@ -35,36 +35,42 @@ class Shader:
 			glGetInfoLogARB(shader, length.value, None, log)
 
 			print('failed to compile:\n%s' % log.value)
+			return False
 		else:
 			glAttachShader(self.program, shader);
+			return True
 
-	def compileShader(self):
+	def compile_shader(self):
 
 		glLinkProgram(self.program);
 
 		status = c_int(0)
 		glGetProgramiv(self.program, GL_LINK_STATUS, byref(status))
 
-		if(status.value == 0):
-			self.logError(self.program, 'link')
-			return
+		if status.value == 0:
+			self.log_error(self.program, 'link')
+			return False
 
 
 		glValidateProgram(self.program)
 		glGetObjectParameterivARB(self.program, GL_VALIDATE_STATUS, byref(status))
 
 		if status.value == 0:
-			self.logError(self.program, 'validate')
-			return
+			self.log_error(self.program, 'validate')
+			return False
 
+		return True
 
-	def getUniformLocation(self, name):
+	def get_uniform_location(self, name):
 		return glGetUniformLocation(self.program, name.encode())
 
-	def sendFloatValue(self, location, value):
-		glUniform1f (location, value)
+	def send_float(self, location, value):
+		glUniform1f(location, value)
 
-	def sendMatrix4(self, location, matrix):
+	def send_integer(self, location, value):
+		glUniform1i(location, value)
+
+	def send_matrix_4(self, location, matrix):
 		glUniformMatrix4fv(location, 1, GL_FALSE, (GLfloat * 16 )(*matrix.as_single_array() ) )
 
 	def send_matrix4_array(self, location, matrix_array):
@@ -101,5 +107,5 @@ class Shader:
 	def bind(self):
 		glUseProgram(self.program)
 
-	def un_bind(self):
+	def unbind(self):
 		glUseProgram(0)

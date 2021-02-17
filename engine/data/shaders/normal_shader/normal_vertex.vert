@@ -11,6 +11,7 @@ layout (location = 5) in vec4 blend_weight;
 uniform mat4 transformation_matrix;
 uniform mat4 camera_matrix;
 uniform mat4 perspective_matrix;
+uniform int has_animation;
 
 uniform mat3x4 bone_matrices[100];
 
@@ -25,14 +26,18 @@ void main()
 	vertex_normal	= normal;
 	tex_coord = vec2(uv.x, 1.0 - uv.y);
 
+	vec4 skeletal_vec = vec4(position, 1.0);
 	vertex_blend_weight = blend_weight;
 
-	mat3x4 bone_matrix = bone_matrices[int(blend_index.x)] * blend_weight.x;
-	bone_matrix += bone_matrices[int(blend_index.y)] * blend_weight.y;
-	bone_matrix += bone_matrices[int(blend_index.z)] * blend_weight.z;
-	bone_matrix += bone_matrices[int(blend_index.w)] * blend_weight.w;
+	if (has_animation == 1)
+	{
+		mat3x4 bone_matrix = bone_matrices[int(blend_index.x)] * blend_weight.x;
+		bone_matrix += bone_matrices[int(blend_index.y)] * blend_weight.y;
+		bone_matrix += bone_matrices[int(blend_index.z)] * blend_weight.z;
+		bone_matrix += bone_matrices[int(blend_index.w)] * blend_weight.w;
 
-	vec4 skeletal_vec = vec4( vec4(position, 1.0) * bone_matrix, 1.0);
+		skeletal_vec = vec4( vec4(position, 1.0) * bone_matrix, 1.0);
+	}
 
 	vec4 t_vector = perspective_matrix * camera_matrix * transformation_matrix * skeletal_vec;
 	gl_Position 	= t_vector;

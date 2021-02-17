@@ -1,15 +1,13 @@
 
-from pyglet.gl  import *
-from shader 	import Shader
 
-
-class NormalShader(Shader):
+#at somepoint we should derive from a basic shader class which already implemenents lightning and all the other things
+class AnimationShader(Shader):
 
 	def __init__(self):
 		super().__init__()
 
-		self.addShader( GL_VERTEX_SHADER_ARB	, "data/shaders/normal_vertex.vert"  )
-		self.addShader( GL_FRAGMENT_SHADER_ARB	, "data/shaders/normal_fragment.frag")
+		self.addShader( GL_VERTEX_SHADER_ARB	, "data/shaders/animation_shader/animation_vertex.vert"  )
+		self.addShader( GL_FRAGMENT_SHADER_ARB	, "data/shaders/animation_shader/animation_fragment.frag")
 		self.compileShader()
 
 		self.locations 							= {}
@@ -28,7 +26,7 @@ class NormalShader(Shader):
 
 		return self.locations[name]
 
-	#fixme, sending the matrices here is probably not a good way
+
 	def prepare_render(self, mesh):
 
 		if mesh.is_animation_root():
