@@ -18,26 +18,26 @@ class Camera(Transform):
 		self.perspective_matrix.set_identity()
 
 	#derived from transform, needs to be adjusted
-	def rebuildMatrix(self):
+	def rebuild_matrix(self):
 		self.result_matrix	= self.rotation_matrix * self.position_matrix
 		self.inverse_matrix	= self.result_matrix.get_rt_inverse_matrix()
 		self.need_update	= False
 
 		if self.parent != None:
-			self.result_matrix = self.parent.getTransformationMatrix() * self.result_matrix
+			self.result_matrix = self.parent.get_transformation_matrix() * self.result_matrix
 
 		for child in self.childs:
-			child.rebuildMatrix()
+			child.rebuild_matrix()
 
 	#derived from transform, needs to be adjusted
-	def setLocalPosition(self,position):
+	def set_local_position(self,position):
 		self.position = position
-		self.position_matrix.setTranslation(-position.x, -position.y, -position.z)
+		self.position_matrix.set_translation(-position.x, -position.y, -position.z)
 
 		self.need_update = True
 
-	#derived from transform, needs to be adjusted
-	def getParentMatrix(self):
+
+	def get_parent_matrix(self):
 		return self.inverse_matrix
 
 
@@ -68,7 +68,7 @@ class Camera(Transform):
 
 	def set_perspective_matrix(self, fov, aspect, near_plane, far_plane):
 		self.fov = fov
-		self.perspective_matrix.setPerspectiveMatrix(fov, aspect, near_plane, far_plane)
+		self.perspective_matrix.set_perspective_matrix(fov, aspect, near_plane, far_plane)
 		self.inv_perspective_matrix = self.perspective_matrix.get_inverse()
 
 

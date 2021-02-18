@@ -138,6 +138,7 @@ class OBJMeshLoader:
 					for i in range(len(meshes)):
 						meshes[i]["diffuse_texture"] = values[1]
 
+
 		return meshes
 
 
@@ -182,6 +183,8 @@ class OBJMeshLoader:
 			mesh_data["ibo"]["type"] = GL_ELEMENT_ARRAY_BUFFER
 			mesh_data["ibo"]["size"] = ctypes.sizeof(GLuint * len(c_data["indices"]) )
 			mesh_data["ibo"]["data"] = (GLuint * len(c_data["indices"])) (*c_data["indices"])
+
+			c_data["aabb"].calculate_knots()
 
 			mesh = Mesh(c_data["name"])
 			mesh.get_buffer().prepare_buffer(c_data["type"][0], len(c_data["indices"]),GL_UNSIGNED_INT, mesh_data)

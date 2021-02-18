@@ -47,8 +47,8 @@ class SceneManager:
 		quat = Quaternion( Vector3(0.0, 0.0, -1.0), 3.141 * 0.5).get_axis_quaternion()
 		quat = quat * Quaternion( Vector3(0.0, -1.0, 0.0), 3.141 * 0.5).get_axis_quaternion()
 
-		self.transform.setLocalPosition ( Vector3(0.0,-5.0,-10.0))
-		self.transform.setLocalRotation (quat.get_normalized() )
+		self.transform.set_local_position ( Vector3(0.0,-5.0,-10.0))
+		self.transform.set_local_rotation (quat.get_normalized() )
 
 
 		if self.tests[0].has_animations():
@@ -89,9 +89,9 @@ class SceneManager:
 
 		shader.send_float (shader.get_location("time") , abs( math.sin( 0.0 ) / 2.0 ) + 0.5 )
 		shader.send_matrix_4 (shader.get_location("perspective_matrix") , self.camera.get_perspective_matrix() )
-		shader.send_matrix_4 (shader.get_location("camera_matrix") , self.camera.getTransformationMatrix() )
+		shader.send_matrix_4 (shader.get_location("camera_matrix") , self.camera.get_transformation_matrix() )
 
-		shader.send_matrix_4 (shader.get_location("transformation_matrix") , self.transform.getTransformationMatrix())
+		shader.send_matrix_4 (shader.get_location("transformation_matrix") , self.transform.get_transformation_matrix())
 
 
 		for i in range(len(self.tests)):

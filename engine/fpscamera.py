@@ -27,24 +27,24 @@ class FPSCamera(Camera):
 
 		if self.key_mapper.is_key_holded(key.W):
 
-			forward = self.getForwardVector()
+			forward = self.get_forward_vector()
 
-			self.setLocalPosition( self.position - forward * self.movement_speed * dt)
+			self.set_local_position( self.position - forward * self.movement_speed * dt)
 
 		elif self.key_mapper.is_key_holded(key.S):
 
-			forward = self.getForwardVector()
-			self.setLocalPosition( self.position + forward * self.movement_speed * dt)
+			forward = self.get_forward_vector()
+			self.set_local_position( self.position + forward * self.movement_speed * dt)
 
 
 		if self.key_mapper.is_key_holded(key.A):
 
-			sideward = self.getRightVector()
-			self.setLocalPosition( self.position - sideward * self.movement_speed * dt)
+			sideward = self.get_right_vector()
+			self.set_local_position( self.position - sideward * self.movement_speed * dt)
 		elif self.key_mapper.is_key_holded(key.D):
 
-			sideward = self.getRightVector()
-			self.setLocalPosition( self.position + sideward * self.movement_speed * dt)
+			sideward = self.get_right_vector()
+			self.set_local_position( self.position + sideward * self.movement_speed * dt)
 
 
 	def update_rotation_matrix(self):
@@ -81,5 +81,6 @@ class FPSCamera(Camera):
 			ray_dir = self.get_mouse_direction()
 
 			meshes = self.engine.get_scene_manager().tests
+			res, t_min, t_max = meshes[0].get_aabb().intersect_aabb_ray(self.engine.get_scene_manager().transform, ray_pos, ray_dir)
 
-			print( meshes[0].get_aabb().intersect_ray(self.engine.get_scene_manager().transform, ray_pos, ray_dir) )
+			print(res, t_min, t_max)

@@ -197,6 +197,7 @@ class IQMLoader:
 			mesh_data["animation_data"] = self.load_animation(header, file, text_blob)
 
 
+			#reads the stored bbox (should be atleast one)
 			mesh_data["bboxes"] = []
 
 			file.seek(header["ofs_bounds"])
@@ -213,7 +214,7 @@ class IQMLoader:
 				(xyradius,) = struct.unpack("f", file.read(4))
 				(radius,) = struct.unpack("f", file.read(4))
 
-				aabb = AABB(Vector3(min_x,min_y,min_z), Vector3(max_x,max_y,max_z))
+				aabb = AABB(Vector3(min_x,min_y,min_z), Vector3(max_x,max_y,max_z), True)
 
 				mesh_data["bboxes"].append(aabb)
 

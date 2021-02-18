@@ -68,15 +68,7 @@ class Matrix4:
 		self.m[3][1] = y
 		self.m[3][2] = z
 
-	def setTranslation(self, x,y,z):
-		self.m[3][0] = x
-		self.m[3][1] = y
-		self.m[3][2] = z
 
-	def setScalation(self, x,y,z):
-		self.m[0][0] = x
-		self.m[1][1] = y
-		self.m[2][2] = z
 
 	def set_scale(self, x,y,z):
 		self.m[0][0] = x
@@ -143,7 +135,7 @@ class Matrix4:
 		self.m[1][1] = result_cos
 
 	#goes from the point, that the matrix is already in its identity form or a reused projection matrix
-	def setPerspectiveMatrix(self, fov, aspect, near_plane, far_plane):
+	def set_perspective_matrix(self, fov, aspect, near_plane, far_plane):
 		range 		= far_plane - near_plane
 		half_fov	= math.tan( math.radians( fov / 2.0 ) )
 
@@ -157,7 +149,7 @@ class Matrix4:
 		self.m[3][3] = 0
 
 
-	def setLookMatrix(self, direction, up_vector = Vector3(0.0,1.0,0.0)):
+	def set_look_matrix(self, direction, up_vector = Vector3(0.0,1.0,0.0)):
 		z_axis	= direction
 		z_axis.normalize()
 
@@ -205,7 +197,7 @@ class Matrix4:
 
 		return result
 
-	def getRotationMatrix(self):
+	def get_rotation_matrix(self):
 		result = Matrix4()
 
 		for x in range(0,3):
@@ -214,7 +206,7 @@ class Matrix4:
 
 		return result
 
-	def getTransposeRotationMatrix(self):
+	def get_transpose_rotation_matrix(self):
 		result = Matrix4()
 
 		for x in range(0,3):
@@ -227,9 +219,9 @@ class Matrix4:
 	#fast inverse, finds solution as long the matrix is orthogonal( all columns are unit vectors )
 	def get_rt_inverse_matrix(self):
 		inverse_position	= Matrix4()
-		inverse_rotation	= self.getTransposeRotationMatrix()
+		inverse_rotation	= self.get_transpose_rotation_matrix()
 
-		inverse_position.setTranslation( -self.m[3][0], -self.m[3][1], -self.m[3][2] )
+		inverse_position.set_translation( -self.m[3][0], -self.m[3][1], -self.m[3][2] )
 
 		return inverse_rotation*inverse_position
 

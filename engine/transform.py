@@ -7,6 +7,7 @@ from quaternion	import Quaternion
 class Transform:
 	def __init__(self):
 
+		self.modified_stamp = 0
 		self.position 		= Vector3()
 		self.rotation		= Quaternion()
 		self.scale			= Vector3()
@@ -25,65 +26,70 @@ class Transform:
 		self.childs			= []
 		self.parent			= None
 
-	def getLocalPosition(self):
+	def get_local_position(self):
 		return self.position
 
-	def setLocalPosition(self, position):
+	def set_local_position(self, position):
 		self.position = position
-		self.position_matrix.setTranslation(position.x,position.y,position.z)
+		self.position_matrix.set_translation(position.x,position.y,position.z)
 
 		self.need_update = True
 
-	def setLocalScale(self, scale):
+	def set_local_scale(self, scale):
 		self.scale = scale
-		self.scale_matrix.setScalation(scale.x,scale.y,scale.z)
+		self.scale_matrix.set_scale(scale.x,scale.y,scale.z)
 
 		self.need_update = True
 
-	def setLocalRotation(self, rotation):
+	def set_local_rotation(self, rotation):
 		self.rotation = rotation
 
 		self.rotation_matrix	= self.rotation.to_matrix4()
 		self.need_update		= True
 
-	def lookAt(self, direction, up_vector = Vector3(0.0,1.0,0.0) ):
-		self.rotation_matrix.setLookMatrix(direction, up_vector)
-		self.rotation 			= Quaternion.fromMatrix(self.rotation_matrix)
-		self.rotation_matrix 	= self.rotation.toMatrix()
+	def look_at(self, direction, up_vector = Vector3(0.0,1.0,0.0) ):
+		self.rotation_matrix.set_look_matrix(direction, up_vector)
+		self.rotation 			= Quaternion.from_matrix(self.rotation_matrix)
+		self.rotation_matrix 	= self.rotation.to_matrix()
 
 		self.need_update = True
 
-	def getForwardVector(self):
+	def get_forward_vector(self):
 		return self.rotation_matrix.get_z_vector()
 
-	def getUpVector(self):
+	def get_up_vector(self):
 		return self.rotation_matrix.get_y_vector()
 
-	def getRightVector(self):
+	def get_right_vector(self):
 		return self.rotation_matrix.get_x_vector()
 
-	def addChild(self, child):
+	def add_child(self, child):
 		self.childs.append(child)
 		child.parent = self
 
-	def rebuildMatrix(self):
+	def get_modified_stamp(self):
+		return self.modified_stamp
+
+	def rebuild_matrix(self):
 		self.result_matrix	= self.position_matrix * self.rotation_matrix * self.scale_matrix
 		self.need_update	= False
 
 		if self.parent != None:
-			self.result_matrix = self.parent.getParentMatrix() * self.result_matrix
+			self.result_matrix = self.parent.get_parent_matrix() * self.result_matrix
 
 		for child in self.childs:
-			child.rebuildMatrix()
+			child.rebuild_matrix()
 
-	def getParentMatrix(self):
-		return self.getTransformationMatrix()
+		self.modified_stamp = self.modified_stamp + 1
 
-	def getTransformationMatrix(self):
+	def get_parent_matrix(self):
+		return self.get_transformation_matrix()
+
+	def get_transformation_matrix(self):
 
 		if self.need_update:
-			self.rebuildMatrix()
+			self.rebuild_matrix()
 		elif self.parent != None and self.parent.need_update == True:
-			self.rebuildMatrix()
+			self.rebuild_matrix()
 
 		return self.result_matrix
