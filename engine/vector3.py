@@ -9,19 +9,25 @@ class Vector3:
 		self.z = z
 
 	@staticmethod
-	def unitX():
+	def unit_x():
 		test = Vector3()
 		test.x = 1.0
 
 		return test
 
 	@staticmethod
-	def unitY():
+	def unit_y():
 		return Vector3(0.0,1.0,0.0)
 
 	@staticmethod
-	def unitZ():
+	def unit_z():
 		return Vector3(0.0,0.0,1.0)
+
+
+	@staticmethod
+	def lerp(a,b, p):
+		return a + (b-a) * p
+
 
 	def unpack(self):
 		return (self.x, self.y, self.z)
@@ -37,9 +43,6 @@ class Vector3:
 	def inverse(self):
 		return Vector3(-self.x, -self.y, -self.z)
 
-	def getLength(self):
-		return math.sqrt( self.x*self.x + self.y*self.y + self.z*self.z)
-
 	def get_len(self):
 		return math.sqrt( self.x*self.x + self.y*self.y + self.z*self.z)
 
@@ -53,8 +56,8 @@ class Vector3:
 		self.y = self.y / length
 		self.z = self.z / length
 
-	def getNormalized(self):
-		length = self.getLength()
+	def get_normalized(self):
+		length = self.get_len()
 		return Vector3( self.x / length, self.y / length, self.z / length )
 
 	def __repr__(self):

@@ -6,10 +6,10 @@ from quaternion 	import Quaternion
 
 
 #https://github.com/ioquake/ioq3/blob/11337c9fa2fa45371182603863164a9186ff2b9e/code/renderergl2/tr_model_iqm.c for match
-class MeshAnimationPlayer:
+class IQMMeshAnimationPlayer:
 
-	def __init__(self, mesh_root, mesh_data):
-		self.mesh_root = mesh_root
+	def __init__(self, meshes, mesh_data):
+		self.meshes = meshes
 		self.mesh_data = mesh_data
 		self.anim_data = self.mesh_data["animation_data"]
 
@@ -31,7 +31,7 @@ class MeshAnimationPlayer:
 		self.prepare_data()
 
 	def is_root(self, mesh_root):
-		return self.mesh_root == mesh_root
+		return self.meshes[0] == mesh_root
 
 	#note that we're using a 3x4 matric, since its uses less space, needs less operation (4 per matrices) and its faster to invert
 	def build_matrix(self, position, rotation, scale):
@@ -114,6 +114,10 @@ class MeshAnimationPlayer:
 
 		if self.animation_time >= bounds[1]-1:
 			self.animation_time = bounds[0]
+
+		#TODO: maybe we should interpolate from the current aabb to the next one, just like in the matrices. But is it worth the performance costs?
+		for i in range(len(self.meshes)):
+			self.meshes[i].set_aabb(self.mesh_data["bboxes"][base_frame])
 
 
 		self.calculate_matrices(base_frame, next_frame, time_between)

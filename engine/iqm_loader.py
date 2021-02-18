@@ -8,7 +8,8 @@ from pyglet.gl import *
 from vector3 import Vector3
 from quaternion import Quaternion
 from mesh import Mesh
-from mesh_animation_player import MeshAnimationPlayer
+from iqm_mesh_animation_player import IQMMeshAnimationPlayer
+from aabb import AABB
 
 VERTEX_ORDER = [
 	"vertices",
@@ -50,7 +51,7 @@ class IQMLoader:
 		meshes = self.generate_mesh(mesh_data)
 
 		if mesh_data["animation_data"] != None:
-			anim_player = MeshAnimationPlayer(meshes[0], mesh_data)
+			anim_player = IQMMeshAnimationPlayer(meshes, mesh_data)
 
 			for i in range(len(meshes)):
 				meshes[i].assign_animation_player(anim_player)
@@ -194,6 +195,27 @@ class IQMLoader:
 
 
 			mesh_data["animation_data"] = self.load_animation(header, file, text_blob)
+
+
+			mesh_data["bboxes"] = []
+
+			file.seek(header["ofs_bounds"])
+
+			for i in range(header["num_frames"]):
+				(min_x,) = struct.unpack("f", file.read(4))
+				(min_y,) = struct.unpack("f", file.read(4))
+				(min_z,) = struct.unpack("f", file.read(4))
+
+				(max_x,) = struct.unpack("f", file.read(4))
+				(max_y,) = struct.unpack("f", file.read(4))
+				(max_z,) = struct.unpack("f", file.read(4))
+
+				(xyradius,) = struct.unpack("f", file.read(4))
+				(radius,) = struct.unpack("f", file.read(4))
+
+				aabb = AABB(Vector3(min_x,min_y,min_z), Vector3(max_x,max_y,max_z))
+
+				mesh_data["bboxes"].append(aabb)
 
 
 		mesh_data["buffers"] = []
@@ -426,6 +448,7 @@ class IQMLoader:
 			mesh = Mesh(data["mesh_informations"][i]["str_name"] )
 			mesh.get_buffer().prepare_buffer(GL_TRIANGLES, len(used_indices),GL_UNSIGNED_INT, mesh_data)
 			mesh.get_buffer().create_buffer()
+			mesh.set_aabb(data["bboxes"][0])
 			mesh.assign_material("diffuse", data["mesh_informations"][i]["str_material"])
 
 			meshes.append(mesh)

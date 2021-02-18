@@ -59,7 +59,7 @@ class Engine(pyglet.window.Window):
 		self.close()
 
 	def on_resize(self, width, height):
-		self.scene_manager.resizeViewport(width, height)
+		self.scene_manager.resize_viewport(width, height)
 
 	def on_key_press(self, key, modifier):
 		#print(modifier)

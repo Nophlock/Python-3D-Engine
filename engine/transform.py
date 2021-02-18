@@ -70,7 +70,7 @@ class Transform:
 		self.result_matrix	= self.position_matrix * self.rotation_matrix * self.scale_matrix
 		self.need_update	= False
 
-		if(self.parent != None):
+		if self.parent != None:
 			self.result_matrix = self.parent.getParentMatrix() * self.result_matrix
 
 		for child in self.childs:
@@ -81,9 +81,9 @@ class Transform:
 
 	def getTransformationMatrix(self):
 
-		if(self.need_update == True):
+		if self.need_update:
 			self.rebuildMatrix()
-		elif(self.parent != None and self.parent.need_update == True):
+		elif self.parent != None and self.parent.need_update == True:
 			self.rebuildMatrix()
 
 		return self.result_matrix

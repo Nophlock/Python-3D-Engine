@@ -48,7 +48,7 @@ class Camera(Transform):
 		width,height = self.engine.get_size()
 
 		nx = mx / width
-		ny = (height - my) / height
+		ny = my / height
 
 		nx = nx * 2.0 - 1.0
 		ny = ny * 2.0 - 1.0

@@ -98,7 +98,7 @@ class Matrix4:
 		self.m[1][2] *= z
 		self.m[2][2] *= z
 
-	#why is this transposed?
+
 	def get_x_vector(self):
 		return Vector3(self.m[0][0], self.m[1][0], self.m[2][0])
 

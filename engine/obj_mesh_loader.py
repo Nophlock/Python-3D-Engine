@@ -5,6 +5,7 @@ import os
 from pyglet.gl 	import *
 
 from vector3 import Vector3
+from aabb import AABB
 from mesh import Mesh
 
 FACE_MAPPING = {}
@@ -35,9 +36,6 @@ class OBJMeshLoader:
 		global_data["raw_tex_coords"] = []
 		global_data["raw_normals"] = []
 
-		global_data["aabb"] = {}
-		global_data["aabb"]["min"] = Vector3(math.inf, math.inf, math.inf)
-		global_data["aabb"]["max"] = Vector3(-math.inf,-math.inf,-math.inf)
 
 		for line in open(file_path, "r"):
 
@@ -62,6 +60,7 @@ class OBJMeshLoader:
 				mesh_data["vertices"] = []
 				mesh_data["indices"] = []
 				mesh_data["diffuse_texture"] = ""
+				mesh_data["aabb"] = AABB(Vector3(-math.inf, -math.inf, -math.inf), Vector3(-math.inf, -math.inf, -math.inf))
 
 
 			if values[0] == "v":
@@ -73,13 +72,13 @@ class OBJMeshLoader:
 				global_data["raw_vertices"].append(y)
 				global_data["raw_vertices"].append(z)
 
-				global_data["aabb"]["min"].x = min(global_data["aabb"]["min"].x, x)
-				global_data["aabb"]["min"].y = min(global_data["aabb"]["min"].y, y)
-				global_data["aabb"]["min"].z = min(global_data["aabb"]["min"].z, z)
+				mesh_data["aabb"].min.x = min(mesh_data["aabb"].min.x, x)
+				mesh_data["aabb"].min.y = min(mesh_data["aabb"].min.y, y)
+				mesh_data["aabb"].min.z = min(mesh_data["aabb"].min.z, z)
 
-				global_data["aabb"]["max"].x = max(global_data["aabb"]["max"].x, x)
-				global_data["aabb"]["max"].y = max(global_data["aabb"]["max"].y, y)
-				global_data["aabb"]["max"].z = max(global_data["aabb"]["max"].z, z)
+				mesh_data["aabb"].max.x = max(mesh_data["aabb"].max.x, x)
+				mesh_data["aabb"].max.y = max(mesh_data["aabb"].max.y, y)
+				mesh_data["aabb"].max.z = max(mesh_data["aabb"].max.z, z)
 
 			if values[0] == "vt":
 				global_data["raw_tex_coords"].append(float(values[1]) )
@@ -187,6 +186,7 @@ class OBJMeshLoader:
 			mesh = Mesh(c_data["name"])
 			mesh.get_buffer().prepare_buffer(c_data["type"][0], len(c_data["indices"]),GL_UNSIGNED_INT, mesh_data)
 			mesh.get_buffer().create_buffer()
+			mesh.set_aabb(c_data["aabb"])
 
 			if c_data["diffuse_texture"] != "":
 				mesh.assign_material("diffuse", c_data["diffuse_texture"])

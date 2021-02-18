@@ -19,6 +19,7 @@ class SceneManager:
 	def __init__(self, engine):
 		self.engine			= engine
 
+		self.time = 0
 		self.camera 		= FPSCamera(engine)
 		self.texture_pool	= TexturePool()
 		self.objects		= []
@@ -33,17 +34,20 @@ class SceneManager:
 
 	def create_test_scene(self):
 
-		self.loader = OBJMeshLoader(self)#IQMLoader(self)
+		#self.loader = OBJMeshLoader(self)#IQMLoader(self)
+		self.loader = IQMLoader(self)
 
-		self.tests 	= self.loader.get_mesh("data/models/objs/multiple_meshes.obj")#self.loader.get_mesh("data/models/iqms/mrfixit/mrfixit.iqm")
+		#self.tests = self.loader.get_mesh("data/models/objs/multiple_meshes.obj")#self.loader.get_mesh("data/models/iqms/mrfixit/mrfixit.iqm")
+		self.tests = self.loader.get_mesh("data/models/iqms/mrfixit/mrfixit.iqm")
 		self.shader	= NormalShader()
 
 		self.transform = Transform()
 
+		#for testing we say the mesh is at the origin for now
 		quat = Quaternion( Vector3(0.0, 0.0, -1.0), 3.141 * 0.5).get_axis_quaternion()
 		quat = quat * Quaternion( Vector3(0.0, -1.0, 0.0), 3.141 * 0.5).get_axis_quaternion()
 
-		self.transform.setLocalPosition  		( Vector3(0.0,-5.0,-10.0))
+		self.transform.setLocalPosition ( Vector3(0.0,-5.0,-10.0))
 		self.transform.setLocalRotation (quat.get_normalized() )
 
 
@@ -64,8 +68,10 @@ class SceneManager:
 				self.tests[i].get_animation_player().update(dt)
 
 
+		self.time = self.time + dt
 
-	def resizeViewport(self, width, height):
+
+	def resize_viewport(self, width, height):
 		glViewport(0, 0, width, height)
 		self.camera.set_perspective_matrix(70.0, width/height, 0.001, 10000.0)
 

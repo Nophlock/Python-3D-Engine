@@ -49,8 +49,8 @@ class FPSCamera(Camera):
 
 	def update_rotation_matrix(self):
 
-		y_axis = Quaternion.from_axis(Vector3.unitY()	, self.sensitive_x)
-		x_axis = Quaternion.from_axis(Vector3.unitX()	,-self.sensitive_y)
+		y_axis = Quaternion.from_axis(Vector3.unit_y()	, self.sensitive_x)
+		x_axis = Quaternion.from_axis(Vector3.unit_x()	,-self.sensitive_y)
 
 		self.rotation = self.rotation * y_axis
 		self.rotation = x_axis * self.rotation
@@ -77,4 +77,9 @@ class FPSCamera(Camera):
 			self.update_rotation_matrix()
 
 		if self.key_mapper.is_key_holded("m_" + str(mouse.RIGHT)):
-			print(self.get_mouse_direction())
+			ray_pos = self.position
+			ray_dir = self.get_mouse_direction()
+
+			meshes = self.engine.get_scene_manager().tests
+
+			print( meshes[0].get_aabb().intersect_ray(self.engine.get_scene_manager().transform, ray_pos, ray_dir) )
