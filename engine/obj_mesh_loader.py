@@ -60,7 +60,7 @@ class OBJMeshLoader:
 				mesh_data["vertices"] = []
 				mesh_data["indices"] = []
 				mesh_data["diffuse_texture"] = ""
-				mesh_data["aabb"] = AABB(Vector3(-math.inf, -math.inf, -math.inf), Vector3(-math.inf, -math.inf, -math.inf))
+				mesh_data["aabb"] = AABB(Vector3(math.inf, math.inf, math.inf), Vector3(-math.inf, -math.inf, -math.inf))
 
 
 			if values[0] == "v":

@@ -34,11 +34,11 @@ class SceneManager:
 
 	def create_test_scene(self):
 
-		#self.loader = OBJMeshLoader(self)#IQMLoader(self)
-		self.loader = IQMLoader(self)
+		self.loader = OBJMeshLoader(self)#IQMLoader(self)
+		#self.loader = IQMLoader(self)
 
-		#self.tests = self.loader.get_mesh("data/models/objs/multiple_meshes.obj")#self.loader.get_mesh("data/models/iqms/mrfixit/mrfixit.iqm")
-		self.tests = self.loader.get_mesh("data/models/iqms/mrfixit/mrfixit.iqm")
+		self.tests = self.loader.get_mesh("data/models/objs/multiple_meshes.obj")#self.loader.get_mesh("data/models/iqms/mrfixit/mrfixit.iqm")
+		#self.tests = self.loader.get_mesh("data/models/iqms/mrfixit/mrfixit.iqm")
 		self.shader	= NormalShader()
 
 		self.transform = Transform()
