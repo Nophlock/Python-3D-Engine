@@ -1,7 +1,9 @@
 
+from pyglet.gl import *
+
 from mesh_buffer_object import MeshBufferObject
 from aabb import AABB
-from pyglet.gl import *
+
 
 class Mesh:
 

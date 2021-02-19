@@ -94,6 +94,8 @@ class IQMMeshAnimationPlayer:
 		self.animation_speed = play_speed
 
 
+	def get_all_aabbs(self):
+		return self.mesh_data["bboxes"]
 
 	def update(self, dt):
 

@@ -10,6 +10,7 @@ from transform 		import Transform
 from quaternion 	import Quaternion
 from fpscamera		import FPSCamera
 from texture_pool	import TexturePool
+from debug_shapes	import DebugShapes
 
 import random
 import math
@@ -31,14 +32,20 @@ class SceneManager:
 		glCullFace(GL_FRONT)
 		glClearColor(0.5, 0.5, 0.5, 0.0);
 
+		self.tmp_aabb = None
+
 
 	def create_test_scene(self):
 
 		self.loader = OBJMeshLoader(self)#IQMLoader(self)
 		#self.loader = IQMLoader(self)
 
-		self.tests = self.loader.get_mesh("data/models/objs/multiple_meshes.obj")#self.loader.get_mesh("data/models/iqms/mrfixit/mrfixit.iqm")
+		self.tests = self.loader.get_mesh("data/models/objs/multiple_meshes.obj")
 		#self.tests = self.loader.get_mesh("data/models/iqms/mrfixit/mrfixit.iqm")
+
+		self.tests.append(DebugShapes.create_aabb_shape(self.tests[0].get_aabb() ) )
+
+		self.tmp_aabb = self.tests[1].get_aabb()
 		self.shader	= NormalShader()
 
 		self.transform = Transform()
@@ -56,7 +63,9 @@ class SceneManager:
 
 
 			for i in range(len(self.tests)):
-				self.tests[i].get_animation_player().play_animation("idle", 1.0)
+
+				if self.tests[i].has_animations():
+					self.tests[i].get_animation_player().play_animation("idle", 1.0)
 
 
 	def update_scene(self, dt):
@@ -66,6 +75,11 @@ class SceneManager:
 
 			if self.tests[i].is_animation_root():
 				self.tests[i].get_animation_player().update(dt)
+
+		#this is the most hackiesh thing every, but it works to get a basic visualization and somehow it doesn cost that much performance
+		if self.tmp_aabb != self.tests[1].get_aabb():
+			self.tmp_aabb = self.tests[1].get_aabb()
+			self.tests[2] = DebugShapes.create_aabb_shape(self.tests[1].get_aabb() )
 
 
 		self.time = self.time + dt

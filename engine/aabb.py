@@ -21,6 +21,9 @@ class AABB:
             self.calculate_knots()
 
 
+    def get_knots(self):
+        return self.unprojected["knots"]
+
     def calculate_knots(self):
 
         min = self.min
