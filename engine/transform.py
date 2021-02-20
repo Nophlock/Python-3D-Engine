@@ -7,7 +7,7 @@ from quaternion	import Quaternion
 class Transform:
 	def __init__(self):
 
-		self.modified_stamp = 0
+		self.modified_stamp = -1
 		self.position 		= Vector3()
 		self.rotation		= Quaternion()
 		self.scale			= Vector3()
@@ -17,10 +17,6 @@ class Transform:
 		self.position_matrix= Matrix4()
 		self.scale_matrix	= Matrix4()
 
-		self.result_matrix.set_identity()
-		self.rotation_matrix.set_identity()
-		self.position_matrix.set_identity()
-		self.scale_matrix.set_identity()
 
 		self.need_update	= False
 		self.childs			= []
@@ -89,7 +85,7 @@ class Transform:
 
 		if self.need_update:
 			self.rebuild_matrix()
-		elif self.parent != None and self.parent.need_update == True:
+		elif self.parent != None and self.parent.need_update:
 			self.rebuild_matrix()
 
 		return self.result_matrix

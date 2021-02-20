@@ -10,7 +10,7 @@ from transform 		import Transform
 from quaternion 	import Quaternion
 from fpscamera		import FPSCamera
 from texture_pool	import TexturePool
-from debug_shapes	import DebugShapes
+from debug_mesh		import DebugMesh
 
 import random
 import math
@@ -23,7 +23,9 @@ class SceneManager:
 		self.time = 0
 		self.camera 		= FPSCamera(engine)
 		self.texture_pool	= TexturePool()
+
 		self.objects		= []
+		self.debug_shapes	= []
 
 		self.camera.set_perspective_matrix(70.0, 800.0/600.0, 0.001, 10000.0)
 		self.create_test_scene()
@@ -40,12 +42,13 @@ class SceneManager:
 		self.loader = OBJMeshLoader(self)#IQMLoader(self)
 		#self.loader = IQMLoader(self)
 
-		self.tests = self.loader.get_mesh("data/models/objs/multiple_meshes.obj")
-		#self.tests = self.loader.get_mesh("data/models/iqms/mrfixit/mrfixit.iqm")
+		self.objects.extend( self.loader.get_mesh("data/models/objs/multiple_meshes.obj") )
+		#self.objects.extend( self.loader.get_mesh("data/models/iqms/mrfixit/mrfixit.iqm") )
 
-		self.tests.append(DebugShapes.create_aabb_shape(self.tests[0].get_aabb() ) )
+		self.debug_shapes.append(DebugMesh(self, self.objects[1]) )
 
-		self.tmp_aabb = self.tests[1].get_aabb()
+
+		self.tmp_aabb = self.objects[1].get_aabb()
 		self.shader	= NormalShader()
 
 		self.transform = Transform()
@@ -58,28 +61,25 @@ class SceneManager:
 		self.transform.set_local_rotation (quat.get_normalized() )
 
 
-		if self.tests[0].has_animations():
-			anim_names = self.tests[0].get_animation_player().get_animation_names()
+		if self.objects[0].has_animations():
+			anim_names = self.objects[0].get_animation_player().get_animation_names()
 
+			for i in range(len(self.objects)):
 
-			for i in range(len(self.tests)):
-
-				if self.tests[i].has_animations():
-					self.tests[i].get_animation_player().play_animation("idle", 1.0)
+				if self.objects[i].has_animations():
+					self.objects[i].get_animation_player().play_animation("idle", 1.0)
 
 
 	def update_scene(self, dt):
 		self.camera.update(dt)
 
-		for i in range(len(self.tests)):
+		for i in range(len(self.objects)):
 
-			if self.tests[i].is_animation_root():
-				self.tests[i].get_animation_player().update(dt)
+			if self.objects[i].is_animation_root():
+				self.objects[i].get_animation_player().update(dt)
 
-		#this is the most hackiesh thing every, but it works to get a basic visualization and somehow it doesn cost that much performance
-		if self.tmp_aabb != self.tests[1].get_aabb():
-			self.tmp_aabb = self.tests[1].get_aabb()
-			self.tests[2] = DebugShapes.create_aabb_shape(self.tests[1].get_aabb() )
+		for i in range(len(self.debug_shapes)):
+			self.debug_shapes[i].update(dt)
 
 
 		self.time = self.time + dt
@@ -108,9 +108,15 @@ class SceneManager:
 		shader.send_matrix_4 (shader.get_location("transformation_matrix") , self.transform.get_transformation_matrix())
 
 
-		for i in range(len(self.tests)):
-			shader.prepare_render(self.tests[i])
-			self.tests[i].render(self)
+		for i in range(len(self.objects)):
+			shader.prepare_render(self.objects[i])
+			self.objects[i].render(self)
+
+		shader.send_matrix_4 (shader.get_location("transformation_matrix") , Matrix4())
+
+		for i in range(len(self.debug_shapes)):
+			shader.prepare_render(self.debug_shapes[i])
+			self.debug_shapes[i].render(self)
 
 
 		shader.unbind()

@@ -80,7 +80,7 @@ class FPSCamera(Camera):
 			ray_pos = self.position
 			ray_dir = self.get_mouse_direction()
 
-			meshes = self.engine.get_scene_manager().tests
-			res, t_min, t_max = meshes[0].get_aabb().intersect_aabb_ray(self.engine.get_scene_manager().transform, ray_pos, ray_dir)
+			meshes = self.engine.get_scene_manager().objects
+			res, t_min, t_max = meshes[1].get_aabb().intersect_aabb_ray(self.engine.get_scene_manager().transform, ray_pos, ray_dir)
 
 			print(res, t_min, t_max)

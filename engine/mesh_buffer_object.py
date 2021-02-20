@@ -15,8 +15,20 @@ class MeshBufferObject:
 		self.attrib_count = 0
 		self.vao_index = 0
 
-		self.attributes	= ()
+		self.attributes	= {}
 		self.buffer_index = {}
+
+
+	def clear_buffer(self):
+
+		if self.is_build:
+			glDeleteVertexArrays(1, self.vao_index)
+
+			for entry in self.buffer_index:
+				glDeleteBuffers(1,self.buffer_index[entry]["index"])
+
+			self.__init__()
+
 
 
 	def prepare_buffer(self, _type, length, type, attribts):

@@ -8,6 +8,7 @@ from aabb import AABB
 class Mesh:
 
 	def __init__(self, name):
+		self.mod_time_stamp = -1
 		self.name = name
 		self.materials = {}
 		self.anim_player = None
@@ -20,10 +21,16 @@ class Mesh:
 		return self.name
 
 	def set_aabb(self, aabb):
+		self.mod_time_stamp = self.mod_time_stamp + 1
 		self.aabb = aabb
 
 	def get_aabb(self):
 		return self.aabb
+
+
+	def get_modified_timestamp(self):
+		return self.mod_time_stamp
+
 
 
 	def assign_animation_player(self, anim_player):

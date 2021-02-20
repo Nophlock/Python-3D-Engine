@@ -20,6 +20,19 @@ class AABB:
         if calc_knots:
             self.calculate_knots()
 
+    def get_min_max(self):
+        return self.min, self.max
+
+    def set_min_max(self, min, max):
+        self.min = min
+        self.max = max
+
+        self.unprojected["min"] = min
+        self.unprojected["max"] = max
+        self.unprojected["modified_stamp"] = self.unprojected["modified_stamp"] + 1
+
+        self.calculate_knots()
+
 
     def get_knots(self):
         return self.unprojected["knots"]
@@ -98,14 +111,32 @@ class AABB:
         self.unprojected["min"] = u_min
         self.unprojected["max"] = u_max
 
+
+    def check_unprojection_min_max_update(self, transform):
+
+        #just check if the stored transform was updated
+        if transform == None:
+
+            if self.unprojected["cached_transform"] != None and self.unprojected["modified_stamp"] != self.unprojected["cached_transform"].get_modified_stamp():
+                self.unprojected["modified_stamp"] = self.unprojected["cached_transform"].get_modified_stamp()
+
+                self.calculate_aabb_unprojected()
+
+                return True
+        else:
+
+            if self.unprojected["cached_transform"] != transform or self.unprojected["modified_stamp"] != transform.get_modified_stamp():
+                self.unprojected["cached_transform"] = transform
+                self.unprojected["modified_stamp"] = transform.get_modified_stamp()
+
+                self.calculate_aabb_unprojected()
+
+                return True
+
+        return False
+
     def intersect_aabb_ray(self, transform, ray_start, ray_dir):
-
-        if self.unprojected["cached_transform"] != transform or self.unprojected["modified_stamp"] != transform.get_modified_stamp():
-            self.unprojected["cached_transform"] = transform
-            self.unprojected["modified_stamp"] = transform.get_modified_stamp()
-
-            self.calculate_aabb_unprojected()
-
+        self.check_unprojection_min_max_update(transform)
         return self.intersect_ray(ray_start, ray_dir, self.unprojected["min"], self.unprojected["max"])
 
 
@@ -122,6 +153,9 @@ class AABB:
         inv_dir = rot_mat.mul_vec3(ray_dir)
 
         return self.intersect_ray(inv_start, inv_dir, self.min, self.max)
+
+    def get_modified_timestamp(self):
+        return self.unprojected["modified_stamp"]
 
     def __repr__(self):
         result = "MIN:\n"
