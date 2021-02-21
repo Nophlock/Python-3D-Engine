@@ -39,7 +39,7 @@ class SceneManager:
 		self.loader = mesh_loader.MeshLoader(self)
 
 		#data/models/iqms/mrfixit/mrfixit.iqm
-		self.objects.extend( self.loader.get_meshs("data/models/objs/multiple_meshes.obj") )
+		self.objects.extend( self.loader.get_meshs("data/models/iqms/mrfixit/mrfixit.iqm") )
 		self.debug_shapes.append(DebugMesh(self, self.objects[0]) )
 
 

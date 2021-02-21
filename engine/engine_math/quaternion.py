@@ -45,15 +45,15 @@ class Quaternion:
 		return Quaternion(axis, w).get_axis_quaternion()
 
 	@staticmethod
-	def lookAt(direction, up_vector = vector3.Vector3(0.0,1.0,0.0) ):
+	def look_at(direction, up_vector = vector3.Vector3(0.0,1.0,0.0) ):
 		matrix = matrix4.Matrix4()
 		matrix.set_Look_matrix(direction, up_vector)
 
-		return Quaternion.fromMatrix(matrix)
+		return Quaternion.from_matrix(matrix)
 
 	@staticmethod
-	def fromEuler(pitch, yaw, roll):
-		result = quaternion.Quaternion()
+	def from_euler(pitch, yaw, roll):
+		result = Quaternion()
 
 		p = pitch  * 0.5
 		y = yaw    * 0.5
@@ -74,7 +74,7 @@ class Quaternion:
 		return result
 
 	@staticmethod
-	def fromMatrix(matrix):
+	def from_matrix(matrix):
 		trace = matrix.m[0][0] + matrix.m[1][1] + matrix.m[2][2]
 
 		if trace > 0.0:
@@ -107,11 +107,11 @@ class Quaternion:
 
 		return Quaternion(vector3.Vector3(m_x,m_y,m_z), m_w)
 
-	def getLength(self):
+	def get_len(self):
 		return math.sqrt( self.axis.x * self.axis.x + self.axis.y*self.axis.y + self.axis.z * self.axis.z + self.w*self.w)
 
 	def normalize(self):
-		length = self.getLength()
+		length = self.get_len()
 
 		if(length == 0):
 			length = 1.0
@@ -120,19 +120,8 @@ class Quaternion:
 		self.w		= self.w	/ length
 
 
-	def getNormalized(self):
-		length = self.getLength()
-
-		if(length == 0):
-			length = 1.0
-
-		norm_axis 	= self.axis / length
-		norm_w		= self.w    / length
-
-		return Quaternion(norm_axis, norm_w)
-
 	def get_normalized(self):
-		length = self.getLength()
+		length = self.get_len()
 
 		if(length == 0):
 			length = 1.0
@@ -150,7 +139,7 @@ class Quaternion:
 	def dot(self, other):
 		return self.axis.dot(other.axis) + self.w * other.w
 
-	def getDotLength(self):
+	def get_dot_length(self):
 		return self.dot(self)
 
 	def lerp(self, factor):
@@ -174,7 +163,7 @@ class Quaternion:
 		return self.scale(math.cos(theta)) + co_quat.scale(math.sin(theta))
 
 
-	def mulVector(self, vec):
+	def mul_vector3(self, vec):
 
 		n_w = -self.axis.x * vec.x - self.axis.y * vec.y - self.axis.z * vec.z
 		n_x =  self.w	   * vec.x + self.axis.y * vec.z - self.axis.z * vec.y
