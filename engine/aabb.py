@@ -1,12 +1,11 @@
 
 import math
 
-from vector3 import Vector3
-from matrix4 import Matrix4
+from engine_math import vector3
 
 class AABB:
 
-    def __init__(self, min = Vector3(), max = Vector3(), calc_knots = False ):
+    def __init__(self, min = vector3.Vector3(), max = vector3.Vector3(), calc_knots = False ):
         self.min = min
         self.max = max
 
@@ -42,14 +41,14 @@ class AABB:
         min = self.min
         max = self.max
 
-        self.unprojected["knots"].append(Vector3(min.x, min.y, min.z)) #000
-        self.unprojected["knots"].append(Vector3(min.x, min.y, max.z)) #001
-        self.unprojected["knots"].append(Vector3(min.x, max.y, min.z)) #010
-        self.unprojected["knots"].append(Vector3(min.x, max.y, max.z)) #011
-        self.unprojected["knots"].append(Vector3(max.x, min.y, min.z)) #100
-        self.unprojected["knots"].append(Vector3(max.x, min.y, max.z)) #101
-        self.unprojected["knots"].append(Vector3(max.x, max.y, min.z)) #110
-        self.unprojected["knots"].append(Vector3(max.x, max.y, max.z)) #111
+        self.unprojected["knots"].append(vector3.Vector3(min.x, min.y, min.z)) #000
+        self.unprojected["knots"].append(vector3.Vector3(min.x, min.y, max.z)) #001
+        self.unprojected["knots"].append(vector3.Vector3(min.x, max.y, min.z)) #010
+        self.unprojected["knots"].append(vector3.Vector3(min.x, max.y, max.z)) #011
+        self.unprojected["knots"].append(vector3.Vector3(max.x, min.y, min.z)) #100
+        self.unprojected["knots"].append(vector3.Vector3(max.x, min.y, max.z)) #101
+        self.unprojected["knots"].append(vector3.Vector3(max.x, max.y, min.z)) #110
+        self.unprojected["knots"].append(vector3.Vector3(max.x, max.y, max.z)) #111
 
 
 
@@ -93,8 +92,8 @@ class AABB:
         matrix = self.unprojected["cached_transform"].get_transformation_matrix()
 
 
-        u_min = Vector3(math.inf, math.inf, math.inf)
-        u_max = Vector3(-math.inf, -math.inf,-math.inf)
+        u_min = vector3.Vector3(math.inf, math.inf, math.inf)
+        u_max = vector3.Vector3(-math.inf, -math.inf,-math.inf)
 
 
         for i in range(len(self.unprojected["knots"])):

@@ -9,6 +9,7 @@ class DebugMesh:
         self.scene_mgr = scene_mgr
         self.linked_to = linked_to
         self.old_shape = None
+        self.oild_time_stamp = -1
 
         self.mesh_buffer_object = MeshBufferObject()
 
@@ -17,9 +18,11 @@ class DebugMesh:
 
         aabb = self.linked_to.get_aabb()
         updated = aabb.check_unprojection_min_max_update(self.scene_mgr.transform)
+        timestamp = aabb.get_modified_timestamp()
 
-        if aabb != self.old_shape or updated:
+        if aabb != self.old_shape or updated or timestamp != self.old_time_stamp:
             self.old_shape = aabb
+            self.old_time_stamp = timestamp
             DebugShapes.create_aabb_shape(self, self.old_shape)
 
 

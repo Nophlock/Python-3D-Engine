@@ -2,14 +2,15 @@
 from pyglet.gl 		import *
 from cube_mesh  	import CubeMeshLoader
 from normal_shader	import NormalShader
-from vector3		import Vector3
-from matrix4 		import Matrix4
 from transform 		import Transform
-from quaternion 	import Quaternion
 from fpscamera		import FPSCamera
 from texture_pool	import TexturePool
 from debug_mesh		import DebugMesh
 from mesh_loaders	import mesh_loader
+
+from engine_math	import vector3
+from engine_math 	import matrix4
+from engine_math	import quaternion
 
 import random
 import math
@@ -48,10 +49,10 @@ class SceneManager:
 		self.transform = Transform()
 
 		#for testing we say the mesh is at the origin for now
-		quat = Quaternion( Vector3(0.0, 0.0, -1.0), 3.141 * 0.5).get_axis_quaternion()
-		quat = quat * Quaternion( Vector3(0.0, -1.0, 0.0), 3.141 * 0.5).get_axis_quaternion()
+		quat = quaternion.Quaternion( vector3.Vector3(0.0, 0.0, -1.0), 3.141 * 0.5).get_axis_quaternion()
+		quat = quat * quaternion.Quaternion( vector3.Vector3(0.0, -1.0, 0.0), 3.141 * 0.5).get_axis_quaternion()
 
-		self.transform.set_local_position ( Vector3(0.0,-5.0,-10.0))
+		self.transform.set_local_position ( vector3.Vector3(0.0,-5.0,-10.0))
 		self.transform.set_local_rotation (quat.get_normalized() )
 
 
@@ -76,7 +77,7 @@ class SceneManager:
 			self.debug_shapes[i].update(dt)
 
 
-		quat = self.transform.get_local_rotation() * Quaternion(Vector3(0.0, 1.0, -1.0), 0.1*dt).get_axis_quaternion()
+		quat = self.transform.get_local_rotation() * quaternion.Quaternion(vector3.Vector3(0.0, 1.0, -1.0), 0.1*dt).get_axis_quaternion()
 		self.transform.set_local_rotation (quat.get_normalized() )
 
 
@@ -110,7 +111,7 @@ class SceneManager:
 			shader.prepare_render(self.objects[i])
 			self.objects[i].render(self)
 
-		shader.send_matrix_4 (shader.get_location("transformation_matrix") , Matrix4())
+		shader.send_matrix_4 (shader.get_location("transformation_matrix") , matrix4.Matrix4())
 
 		for i in range(len(self.debug_shapes)):
 			shader.prepare_render(self.debug_shapes[i])

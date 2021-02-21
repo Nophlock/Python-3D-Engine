@@ -5,8 +5,9 @@ import os
 
 from pyglet.gl import *
 
-from vector3 import Vector3
-from quaternion import Quaternion
+from engine_math import vector3
+from engine_math import quaternion
+
 from mesh import Mesh
 from iqm_mesh_animation_player import IQMMeshAnimationPlayer
 from aabb import AABB
@@ -44,7 +45,6 @@ class IQMLoader:
 
 	def __init__(self, scene_manager):
 		self.scene_manager = scene_manager
-		pass
 
 	def get_meshs(self, file_path):
 		mesh_data = self.load_file(file_path)
@@ -214,7 +214,7 @@ class IQMLoader:
 				(xyradius,) = struct.unpack("f", file.read(4))
 				(radius,) = struct.unpack("f", file.read(4))
 
-				aabb = AABB(Vector3(min_x,min_y,min_z), Vector3(max_x,max_y,max_z), True)
+				aabb = AABB(vector3.Vector3(min_x,min_y,min_z), vector3.Vector3(max_x,max_y,max_z), True)
 
 				mesh_data["bboxes"].append(aabb)
 
@@ -276,9 +276,9 @@ class IQMLoader:
 				(sy,) = struct.unpack("f", file.read(4))
 				(sz,) = struct.unpack("f", file.read(4))
 
-				joint["translate"] = Vector3(tx,ty,tz)
-				joint["rotate"] = Quaternion(Vector3(rx,ry,rz),rw).get_normalized()
-				joint["scale"] = Vector3(sx,sy,sz)
+				joint["translate"] = vector3.Vector3(tx,ty,tz)
+				joint["rotate"] = quaternion.Quaternion(vector3.Vector3(rx,ry,rz),rw).get_normalized()
+				joint["scale"] = vector3.Vector3(sx,sy,sz)
 
 				joints.append(joint)
 
@@ -354,8 +354,8 @@ class IQMLoader:
 					channel_offset = poses[j]["channel_offset"]
 					channel_scale = poses[j]["channel_scale"]
 
-					translate = Vector3()
-					scale = Vector3()
+					translate = vector3.Vector3()
+					scale = vector3.Vector3()
 
 
 					translate.x, frame_index = self.extract_frame_data( channel_offset, channel_mask, channel_scale, frames, frame_index, 0)
@@ -371,7 +371,7 @@ class IQMLoader:
 					scale.y, frame_index = self.extract_frame_data( channel_offset, channel_mask, channel_scale, frames, frame_index, 8)
 					scale.z, frame_index = self.extract_frame_data( channel_offset, channel_mask, channel_scale, frames, frame_index, 9)
 
-					rotation = Quaternion(Vector3(rx,ry,rz), rw)#we need to assign it here with the constructor, otherwise everything explodes for some reason ...
+					rotation = quaternion.Quaternion(vector3.Vector3(rx,ry,rz), rw)#we need to assign it here with the constructor, otherwise everything explodes for some reason ...
 
 					animation_data["frame_positions"][i].append({"pose": poses[j], "translate": translate, "rotate": rotation, "scale": scale})
 

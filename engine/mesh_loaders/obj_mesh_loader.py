@@ -4,7 +4,7 @@ import os
 
 from pyglet.gl 	import *
 
-from vector3 import Vector3
+from engine_math import vector3
 from aabb import AABB
 from mesh import Mesh
 
@@ -60,7 +60,7 @@ class OBJMeshLoader:
 				mesh_data["vertices"] = []
 				mesh_data["indices"] = []
 				mesh_data["diffuse_texture"] = ""
-				mesh_data["aabb"] = AABB(Vector3(math.inf, math.inf, math.inf), Vector3(-math.inf, -math.inf, -math.inf))
+				mesh_data["aabb"] = AABB(vector3.Vector3(math.inf, math.inf, math.inf), vector3.Vector3(-math.inf, -math.inf, -math.inf))
 
 
 			if values[0] == "v":

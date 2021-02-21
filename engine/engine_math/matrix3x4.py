@@ -2,8 +2,8 @@
 
 import math
 
-from vector3 import Vector3
-from matrix4 import Matrix4
+from engine_math import vector3
+from engine_math import matrix4
 
 #https://github.com/ioquake/ioq3/blob/11337c9fa2fa45371182603863164a9186ff2b9e/code/renderergl2/tr_model_iqm.c
 
@@ -18,7 +18,7 @@ class Matrix3x4:
 
     @staticmethod
     def from_matrix4(c):
-        m = Matrix3x4()
+        m = matrix3x4.Matrix3x4()
         b = c.m
 
         m.m[0][0] = b[0][0]
@@ -70,7 +70,7 @@ class Matrix3x4:
     def get_inverse(self):
 
         m = self.m
-        r = Matrix3x4()
+        r = matrix3x4.Matrix3x4()
 
         determinat =    m[0][0] * m[1][1] * m[2][2] +\
                         m[0][1] * m[1][2] * m[2][0] +\
@@ -101,7 +101,7 @@ class Matrix3x4:
 
     #note that this only works when scaling is 1.0
     def get_fast_inverse():
-        base = Matrix4.from_matrix3x4(self)
+        base = matrix4.Matrix4.from_matrix3x4(self)
 
         base.m[3][0] = 0.0
         base.m[3][1] = 0.0
@@ -116,14 +116,14 @@ class Matrix3x4:
         inverse.m[3][1] = -(inverse.m[0][1] * x + inverse.m[1][1] * y + inverse.m[2][1] * z)
         inverse.m[3][2] = -(inverse.m[0][2] * x + inverse.m[1][2] * y + inverse.m[2][2] * z)
 
-        return Matrix3x4.from_matrix4(inverse)
+        return matrix3x4.Matrix3x4.from_matrix4(inverse)
 
 
     @staticmethod
     def interpolate(m1, m2, p):
 
         inv = (1.0 - p)
-        r = Matrix3x4()
+        r = matrix3x4.Matrix3x4()
         a = m1.m
         b = m2.m
 

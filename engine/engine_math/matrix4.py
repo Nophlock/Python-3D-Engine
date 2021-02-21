@@ -1,6 +1,6 @@
 
 import math
-from vector3 import Vector3
+from engine_math import vector3
 
 #Note that we dont use any loops, to save some performance
 
@@ -92,13 +92,13 @@ class Matrix4:
 
 
 	def get_x_vector(self):
-		return Vector3(self.m[0][0], self.m[1][0], self.m[2][0])
+		return vector3.Vector3(self.m[0][0], self.m[1][0], self.m[2][0])
 
 	def get_y_vector(self):
-		return Vector3(self.m[0][1], self.m[1][1], self.m[2][1])
+		return vector3.Vector3(self.m[0][1], self.m[1][1], self.m[2][1])
 
 	def get_z_vector(self):
-		return Vector3(self.m[0][2], self.m[1][2], self.m[2][2])
+		return vector3.Vector3(self.m[0][2], self.m[1][2], self.m[2][2])
 
 	def setRotationX(self, angle):
 
@@ -149,7 +149,7 @@ class Matrix4:
 		self.m[3][3] = 0
 
 
-	def set_look_matrix(self, direction, up_vector = Vector3(0.0,1.0,0.0)):
+	def set_look_matrix(self, direction, up_vector = vector3.Vector3(0.0,1.0,0.0)):
 		z_axis	= direction
 		z_axis.normalize()
 
@@ -174,7 +174,7 @@ class Matrix4:
 
 
 	def mul_vec3(self, vector, w = 1.0):
-		result = Vector3()
+		result = vector3.Vector3()
 
 		result.x = self.m[0][0] * vector.x + self.m[1][0] * vector.y + self.m[2][0] * vector.z + self.m[3][0] * w
 		result.y = self.m[0][1] * vector.x + self.m[1][1] * vector.y + self.m[2][1] * vector.z + self.m[3][1] * w

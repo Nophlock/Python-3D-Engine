@@ -3,7 +3,7 @@ import ctypes
 from pyglet.gl 	import *
 
 from mesh import Mesh
-from vector3 import Vector3
+from engine_math import vector3
 
 class DebugShapes:
 
@@ -15,14 +15,14 @@ class DebugShapes:
         max = aabb.unprojected["max"]
         knots = []
 
-        knots.append(Vector3(min.x, min.y, min.z)) #000
-        knots.append(Vector3(min.x, min.y, max.z)) #001
-        knots.append(Vector3(min.x, max.y, min.z)) #010
-        knots.append(Vector3(min.x, max.y, max.z)) #011
-        knots.append(Vector3(max.x, min.y, min.z)) #100
-        knots.append(Vector3(max.x, min.y, max.z)) #101
-        knots.append(Vector3(max.x, max.y, min.z)) #110
-        knots.append(Vector3(max.x, max.y, max.z)) #111
+        knots.append(vector3.Vector3(min.x, min.y, min.z)) #000
+        knots.append(vector3.Vector3(min.x, min.y, max.z)) #001
+        knots.append(vector3.Vector3(min.x, max.y, min.z)) #010
+        knots.append(vector3.Vector3(min.x, max.y, max.z)) #011
+        knots.append(vector3.Vector3(max.x, min.y, min.z)) #100
+        knots.append(vector3.Vector3(max.x, min.y, max.z)) #101
+        knots.append(vector3.Vector3(max.x, max.y, min.z)) #110
+        knots.append(vector3.Vector3(max.x, max.y, max.z)) #111
 
         vertices = []
         ibo = [0,1,3,2,0, 4,5,1,0,4, 6,7,5,7, 3,2,6]

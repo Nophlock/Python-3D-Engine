@@ -1,21 +1,21 @@
 
 
-from vector3 	import Vector3
-from matrix4 	import Matrix4
-from quaternion	import Quaternion
+from engine_math import vector3
+from engine_math import matrix4
+from engine_math import quaternion
 
 class Transform:
 	def __init__(self):
 
 		self.modified_stamp = -1
-		self.position 		= Vector3()
-		self.rotation		= Quaternion()
-		self.scale			= Vector3()
+		self.position 		= vector3.Vector3()
+		self.rotation		= quaternion.Quaternion()
+		self.scale			= vector3.Vector3()
 
-		self.result_matrix	= Matrix4()
-		self.rotation_matrix= Matrix4()
-		self.position_matrix= Matrix4()
-		self.scale_matrix	= Matrix4()
+		self.result_matrix	= matrix4.Matrix4()
+		self.rotation_matrix= matrix4.Matrix4()
+		self.position_matrix= matrix4.Matrix4()
+		self.scale_matrix	= matrix4.Matrix4()
 
 
 		self.need_update	= False
@@ -46,9 +46,9 @@ class Transform:
 	def get_local_rotation(self):
 		return self.rotation
 
-	def look_at(self, direction, up_vector = Vector3(0.0,1.0,0.0) ):
+	def look_at(self, direction, up_vector = vector3.Vector3(0.0,1.0,0.0) ):
 		self.rotation_matrix.set_look_matrix(direction, up_vector)
-		self.rotation 			= Quaternion.from_matrix(self.rotation_matrix)
+		self.rotation 			= quaternion.Quaternion.from_matrix(self.rotation_matrix)
 		self.rotation_matrix 	= self.rotation.to_matrix()
 
 		self.need_update = True

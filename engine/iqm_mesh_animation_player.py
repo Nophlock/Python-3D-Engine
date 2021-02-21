@@ -1,8 +1,8 @@
 
-from vector3		import Vector3
-from matrix3x4 		import Matrix3x4
+from engine_math	import vector3
+from engine_math 	import matrix3x4
+from engine_math 	import quaternion
 from transform 		import Transform
-from quaternion 	import Quaternion
 
 
 #https://github.com/ioquake/ioq3/blob/11337c9fa2fa45371182603863164a9186ff2b9e/code/renderergl2/tr_model_iqm.c for match
@@ -26,7 +26,7 @@ class IQMMeshAnimationPlayer:
 		self.animation_speed = 1.0
 
 		for i in range(100):
-			self.anim_matrices.append(Matrix3x4() )
+			self.anim_matrices.append(matrix3x4.Matrix3x4() )
 
 		self.prepare_data()
 
@@ -36,7 +36,7 @@ class IQMMeshAnimationPlayer:
 	#note that we're using a 3x4 matric, since its uses less space, needs less operation (4 per matrices) and its faster to invert
 	def build_matrix(self, position, rotation, scale):
 
-		matrix = Matrix3x4.from_matrix4(rotation.to_matrix4())
+		matrix = matrix3x4.Matrix3x4.from_matrix4(rotation.to_matrix4())
 
 		matrix.scale(scale.x, scale.y, scale.z)
 		matrix.set_translation(position.x, position.y, position.z)
@@ -135,7 +135,7 @@ class IQMMeshAnimationPlayer:
 			c_frame_matrix = self.frame_matrices[base_frame][i]
 			c_target_frame_matrix = self.frame_matrices[next_frame][i]
 
-			result = Matrix3x4.interpolate(c_frame_matrix, c_target_frame_matrix, time_between)
+			result = matrix3x4.Matrix3x4.interpolate(c_frame_matrix, c_target_frame_matrix, time_between)
 
 			if joint["parent"] >= 0:
 				self.anim_matrices[i] = self.anim_matrices[joint["parent"]] * result

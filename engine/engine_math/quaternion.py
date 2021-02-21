@@ -1,13 +1,13 @@
 import math
 
-from vector3 import Vector3
-from matrix4 import Matrix4
+from engine_math import vector3
+from engine_math import matrix4
 
 #todo, maybe we should switch to x,y,z components instead of an vector3 for performance reasons
 
 class Quaternion:
 
-	def __init__(self, axis=Vector3(), w=1.0):
+	def __init__(self, axis = vector3.Vector3(), w = 1.0):
 		self.axis	= axis
 		self.w 		= w
 
@@ -45,15 +45,15 @@ class Quaternion:
 		return Quaternion(axis, w).get_axis_quaternion()
 
 	@staticmethod
-	def lookAt(direction, up_vector = Vector3(0.0,1.0,0.0) ):
-		matrix = Matrix4()
-		matrix.setLookMatrix(direction, up_vector)
+	def lookAt(direction, up_vector = vector3.Vector3(0.0,1.0,0.0) ):
+		matrix = matrix4.Matrix4()
+		matrix.set_Look_matrix(direction, up_vector)
 
 		return Quaternion.fromMatrix(matrix)
 
 	@staticmethod
 	def fromEuler(pitch, yaw, roll):
-		result = Quaternion()
+		result = quaternion.Quaternion()
 
 		p = pitch  * 0.5
 		y = yaw    * 0.5
@@ -105,7 +105,7 @@ class Quaternion:
 
 
 
-		return Quaternion(Vector3(m_x,m_y,m_z), m_w)
+		return Quaternion(vector3.Vector3(m_x,m_y,m_z), m_w)
 
 	def getLength(self):
 		return math.sqrt( self.axis.x * self.axis.x + self.axis.y*self.axis.y + self.axis.z * self.axis.z + self.w*self.w)
@@ -137,7 +137,7 @@ class Quaternion:
 		if(length == 0):
 			length = 1.0
 
-		norm_axis 	= Vector3(self.axis.x / length, self.axis.y / length, self.axis.z / length)
+		norm_axis 	= vector3.Vector3(self.axis.x / length, self.axis.y / length, self.axis.z / length)
 		norm_w		= self.w    / length
 
 		return Quaternion(norm_axis, norm_w)
@@ -181,7 +181,7 @@ class Quaternion:
 		n_y =  self.w	   * vec.y + self.axis.z * vec.x - self.axis.x * vec.z
 		n_z =  self.w	   * vec.z + self.axis.x * vec.y - self.axis.y * vec.x
 
-		return Quaternion(Vector3(n_x,n_y,n_z), n_w)
+		return Quaternion(vector3.Vector3(n_x,n_y,n_z), n_w)
 
 
 	def __mul__(self, other):
@@ -193,7 +193,7 @@ class Quaternion:
 		n_y = a.w * b.axis.y 	+ a.axis.y * b.w 		+ a.axis.z * b.axis.x - a.axis.x * b.axis.z
 		n_z = a.w * b.axis.z 	+ a.axis.z * b.w 		+ a.axis.x * b.axis.y - a.axis.y * b.axis.x
 
-		return Quaternion(Vector3(n_x,n_y,n_z), n_w)
+		return Quaternion(vector3.Vector3(n_x,n_y,n_z), n_w)
 
 	def __sub__(self, other):
 		return Quaternion(self.axis - other.axis, self.w - other.w)
@@ -210,7 +210,7 @@ class Quaternion:
 
 	#from https://paroj.github.io/gltut/Positioning/Tut08%20Quaternions.html
 	def to_matrix4(self):
-		result = Matrix4()
+		result = matrix4.Matrix4()
 		a = result.m
 
 		xx = 2.0 * self.axis.x * self.axis.x

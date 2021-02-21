@@ -1,7 +1,7 @@
 
-from camera 		import Camera
-from quaternion		import Quaternion
-from vector3		import Vector3
+from camera import Camera
+from engine_math import quaternion
+from engine_math import vector3
 
 from pyglet.window import key
 from pyglet.window import mouse
@@ -49,8 +49,8 @@ class FPSCamera(Camera):
 
 	def update_rotation_matrix(self):
 
-		y_axis = Quaternion.from_axis(Vector3.unit_y()	, self.sensitive_x)
-		x_axis = Quaternion.from_axis(Vector3.unit_x()	,-self.sensitive_y)
+		y_axis = quaternion.Quaternion.from_axis(vector3.Vector3.unit_y()	, self.sensitive_x)
+		x_axis = quaternion.Quaternion.from_axis(vector3.Vector3.unit_x()	,-self.sensitive_y)
 
 		self.rotation = self.rotation * y_axis
 		self.rotation = x_axis * self.rotation
@@ -81,6 +81,6 @@ class FPSCamera(Camera):
 			ray_dir = self.get_mouse_direction()
 
 			meshes = self.engine.get_scene_manager().objects
-			res, t_min, t_max = meshes[1].get_aabb().intersect_aabb_ray(self.engine.get_scene_manager().transform, ray_pos, ray_dir)
+			res, t_min, t_max = meshes[0].get_aabb().intersect_aabb_ray(self.engine.get_scene_manager().transform, ray_pos, ray_dir)
 
 			print(res, t_min, t_max)

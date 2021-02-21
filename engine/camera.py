@@ -1,6 +1,7 @@
 
-from vector3 	import Vector3
-from matrix4 	import Matrix4
+from engine_math import vector3
+from engine_math import matrix4
+
 from transform	import Transform
 
 class Camera(Transform):
@@ -9,9 +10,9 @@ class Camera(Transform):
 		super().__init__()
 
 		self.engine				= engine_ref
-		self.inverse_matrix		= Matrix4()
-		self.perspective_matrix = Matrix4()
-		self.inv_perspective_matrix = Matrix4()
+		self.inverse_matrix		= matrix4.Matrix4()
+		self.perspective_matrix = matrix4.Matrix4()
+		self.inv_perspective_matrix = matrix4.Matrix4()
 		self.fov = 0
 
 		self.inverse_matrix.set_identity()
@@ -41,7 +42,6 @@ class Camera(Transform):
 		return self.inverse_matrix
 
 
-	#todo, check if this is right
 	# https://antongerdelan.net/opengl/raycasting.html
 	def get_mouse_direction(self):
 		mx,my = self.key_mapper.get_mouse_position()
@@ -53,7 +53,7 @@ class Camera(Transform):
 		nx = nx * 2.0 - 1.0
 		ny = ny * 2.0 - 1.0
 
-		ray_clip = Vector3(nx,ny, -1.0)
+		ray_clip = vector3.Vector3(nx,ny, -1.0)
 
 		ray_eye = self.inv_perspective_matrix.mul_vec3(ray_clip, 1.0)
 		ray_eye.z = -1.0
