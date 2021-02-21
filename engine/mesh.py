@@ -13,9 +13,16 @@ class Mesh:
 		self.materials = {}
 		self.anim_player = None
 		self.aabb = AABB()
+		self.informations = None
 
 		self.mesh_buffer_object = MeshBufferObject()
 
+
+	def set_informations(self, info):
+		self.informations = info
+
+	def get_informations(self):
+		return self.informations
 
 	def get_name(self):
 		return self.name

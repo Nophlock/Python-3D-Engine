@@ -38,9 +38,30 @@ class SceneManager:
 	def create_test_scene(self):
 		self.loader = mesh_loader.MeshLoader(self)
 
-		#data/models/iqms/mrfixit/mrfixit.iqm
 		self.objects.extend( self.loader.get_meshs("data/models/objs/multiple_meshes.obj") )
+		#self.objects.extend( self.loader.get_meshs("data/models/iqms/mrfixit/mrfixit.iqm") )
 		self.debug_shapes.append(DebugMesh(self, self.objects[0]) )
+
+		tot_triangles = 0
+		tot_vertices = 0
+		tot_bones = 0
+
+		for i in range(len(self.objects)):
+			info = self.objects[i].get_informations()
+
+			if info == None:
+				continue
+
+			tot_triangles = tot_triangles + info["num_triangles"]
+			tot_vertices = tot_vertices + info["num_vertices"]
+
+			if self.objects[i].is_animation_root():
+				tot_bones = tot_bones + info["num_bones"]
+
+		print("[Scene stats]")
+		print("Total triangles: ", tot_triangles)
+		print("Total vertices: ", tot_vertices)
+		print("Total bones: ", tot_bones)
 
 
 		self.tmp_aabb = self.objects[1].get_aabb()
@@ -55,14 +76,12 @@ class SceneManager:
 		self.transform.set_local_position ( vector3.Vector3(0.0,-5.0,-10.0))
 		self.transform.set_local_rotation (quat.get_normalized() )
 
+		for i in range(len(self.objects)):
 
-		if self.objects[0].has_animations():
-			anim_names = self.objects[0].get_animation_player().get_animation_names()
+			if self.objects[i].has_animations():
+				anim_names = self.objects[i].get_animation_player().get_animation_names()
+				self.objects[i].get_animation_player().play_animation("idle", 1.0)
 
-			for i in range(len(self.objects)):
-
-				if self.objects[i].has_animations():
-					self.objects[i].get_animation_player().play_animation("idle", 1.0)
 
 
 	def update_scene(self, dt):

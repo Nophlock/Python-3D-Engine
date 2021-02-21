@@ -184,7 +184,7 @@ class IQMLoader:
 				mesh_informations["name"] = int.from_bytes(file.read(4), "little")
 				mesh_informations["material"] = int.from_bytes(file.read(4), "little")
 				mesh_informations["first_vertex"] = int.from_bytes(file.read(4), "little")
-				mesh_informations["num_vertexes"] = int.from_bytes(file.read(4), "little")
+				mesh_informations["num_vertices"] = int.from_bytes(file.read(4), "little")
 				mesh_informations["first_triangle"] = int.from_bytes(file.read(4), "little")
 				mesh_informations["num_triangle"] = int.from_bytes(file.read(4), "little")
 				mesh_informations["str_name"] = self.resolve_name(text_blob, mesh_informations["name"])
@@ -416,8 +416,17 @@ class IQMLoader:
 		for i in range( len(data["mesh_informations"]) ):
 
 			mesh_data = {}
+			mesh_infos = {}
+
 			indi_clip = ( data["mesh_informations"][i]["first_triangle"] * IQM_TRIANGLE_SIZE, (data["mesh_informations"][i]["first_triangle"] + data["mesh_informations"][i]["num_triangle"]) * IQM_TRIANGLE_SIZE )
 			used_indices = data["indices"][ indi_clip[0]:indi_clip[1] ]
+
+			mesh_infos["num_triangles"] = data["mesh_informations"][i]["num_triangle"]
+			mesh_infos["num_vertices"] = data["mesh_informations"][i]["num_vertices"]
+			mesh_infos["num_bones"] = 0
+
+			if "animation_data" in data:
+				mesh_infos["num_bones"] = len( data["animation_data"]["joints"] )
 
 			for j in range(len(data["buffers"]) ):
 
@@ -449,6 +458,7 @@ class IQMLoader:
 			mesh = Mesh(data["mesh_informations"][i]["str_name"] )
 			mesh.get_buffer().prepare_buffer(GL_TRIANGLES, len(used_indices),GL_UNSIGNED_INT, mesh_data)
 			mesh.get_buffer().create_buffer()
+			mesh.set_informations(mesh_infos)
 			mesh.set_aabb(data["bboxes"][0])
 			mesh.assign_material("diffuse", data["mesh_informations"][i]["str_material"])
 

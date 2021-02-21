@@ -46,7 +46,7 @@ class Engine(pyglet.window.Window):
 		self.frame_tick = self.frame_tick + dt
 
 		if self.frame_tick >= 1.0:
-			print(self.frames)
+			print("FPS: ", self.frames)
 
 			self.frame_tick = 0.0
 			self.frames = 0

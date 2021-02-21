@@ -150,6 +150,11 @@ class OBJMeshLoader:
 
 			c_data = data[i]
 			mesh_data = {}
+			mesh_infos = {}
+
+			mesh_infos["num_triangles"] = len(c_data["indices"]) / 3
+			mesh_infos["num_vertices"] = len(c_data["vertices"])
+			mesh_infos["num_bones"] = 0 #objs doesnt have any bones
 
 			mesh_data["vbo"] = {}
 			mesh_data["vbo"]["type"] = GL_ARRAY_BUFFER
@@ -189,6 +194,8 @@ class OBJMeshLoader:
 			mesh = Mesh(c_data["name"])
 			mesh.get_buffer().prepare_buffer(c_data["type"][0], len(c_data["indices"]),GL_UNSIGNED_INT, mesh_data)
 			mesh.get_buffer().create_buffer()
+
+			mesh.set_informations(mesh_infos)
 			mesh.set_aabb(c_data["aabb"])
 
 			if c_data["diffuse_texture"] != "":
