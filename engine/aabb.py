@@ -86,7 +86,8 @@ class AABB:
         return True, t_min, t_max
 
 
-
+    #note that this is not 100% acurrate but its the best method comparing performance to accuracy
+    #the accurate method would be to transform every vertex in the cpu and then make the min-max check
     def calculate_aabb_unprojected(self):
 
         matrix = self.unprojected["cached_transform"].get_transformation_matrix()
@@ -106,7 +107,6 @@ class AABB:
             u_max.x = max(t_vec.x, u_max.x)
             u_max.y = max(t_vec.y, u_max.y)
             u_max.z = max(t_vec.z, u_max.z)
-
 
         self.unprojected["min"] = u_min
         self.unprojected["max"] = u_max

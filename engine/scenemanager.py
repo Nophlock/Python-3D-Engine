@@ -1,8 +1,6 @@
 
 from pyglet.gl 		import *
 from cube_mesh  	import CubeMeshLoader
-from obj_mesh_loader import OBJMeshLoader
-from iqm_loader		import IQMLoader
 from normal_shader	import NormalShader
 from vector3		import Vector3
 from matrix4 		import Matrix4
@@ -11,6 +9,7 @@ from quaternion 	import Quaternion
 from fpscamera		import FPSCamera
 from texture_pool	import TexturePool
 from debug_mesh		import DebugMesh
+from mesh_loaders	import mesh_loader
 
 import random
 import math
@@ -18,7 +17,7 @@ import math
 class SceneManager:
 
 	def __init__(self, engine):
-		self.engine			= engine
+		self.engine	= engine
 
 		self.time = 0
 		self.camera 		= FPSCamera(engine)
@@ -34,18 +33,13 @@ class SceneManager:
 		glCullFace(GL_FRONT)
 		glClearColor(0.5, 0.5, 0.5, 0.0);
 
-		self.tmp_aabb = None
-
 
 	def create_test_scene(self):
+		self.loader = mesh_loader.MeshLoader(self)
 
-		self.loader = OBJMeshLoader(self)#IQMLoader(self)
-		#self.loader = IQMLoader(self)
-
-		self.objects.extend( self.loader.get_mesh("data/models/objs/multiple_meshes.obj") )
-		#self.objects.extend( self.loader.get_mesh("data/models/iqms/mrfixit/mrfixit.iqm") )
-
-		self.debug_shapes.append(DebugMesh(self, self.objects[1]) )
+		#data/models/iqms/mrfixit/mrfixit.iqm
+		self.objects.extend( self.loader.get_meshs("data/models/objs/multiple_meshes.obj") )
+		self.debug_shapes.append(DebugMesh(self, self.objects[0]) )
 
 
 		self.tmp_aabb = self.objects[1].get_aabb()
@@ -80,6 +74,10 @@ class SceneManager:
 
 		for i in range(len(self.debug_shapes)):
 			self.debug_shapes[i].update(dt)
+
+
+		quat = self.transform.get_local_rotation() * Quaternion(Vector3(0.0, 1.0, -1.0), 0.1*dt).get_axis_quaternion()
+		self.transform.set_local_rotation (quat.get_normalized() )
 
 
 		self.time = self.time + dt

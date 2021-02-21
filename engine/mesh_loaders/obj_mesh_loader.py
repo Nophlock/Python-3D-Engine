@@ -17,7 +17,7 @@ class OBJMeshLoader:
 	def __init__(self, scene_manager):
 		self.scene_manager = scene_manager
 
-	def get_mesh(self, file_path):
+	def get_meshs(self, file_path):
 		data = self.read_file(file_path)
 		return self.generate_mesh(data)
 

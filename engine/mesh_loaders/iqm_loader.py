@@ -46,7 +46,7 @@ class IQMLoader:
 		self.scene_manager = scene_manager
 		pass
 
-	def get_mesh(self, file_path):
+	def get_meshs(self, file_path):
 		mesh_data = self.load_file(file_path)
 		meshes = self.generate_mesh(mesh_data)
 

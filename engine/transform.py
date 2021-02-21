@@ -43,6 +43,9 @@ class Transform:
 		self.rotation_matrix	= self.rotation.to_matrix4()
 		self.need_update		= True
 
+	def get_local_rotation(self):
+		return self.rotation
+
 	def look_at(self, direction, up_vector = Vector3(0.0,1.0,0.0) ):
 		self.rotation_matrix.set_look_matrix(direction, up_vector)
 		self.rotation 			= Quaternion.from_matrix(self.rotation_matrix)
