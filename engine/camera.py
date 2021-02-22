@@ -3,13 +3,16 @@ from engine_math import vector3
 from engine_math import matrix4
 
 from transform	import Transform
+from frustum	import Frustum
 
 class Camera(Transform):
 
 	def __init__(self, engine_ref):
 		super().__init__()
 
-		self.engine				= engine_ref
+		self.engine	= engine_ref
+		self.frustum = Frustum()
+
 		self.inverse_matrix		= matrix4.Matrix4()
 		self.perspective_matrix = matrix4.Matrix4()
 		self.inv_perspective_matrix = matrix4.Matrix4()
@@ -23,6 +26,8 @@ class Camera(Transform):
 		self.result_matrix	= self.rotation_matrix * self.position_matrix
 		self.inverse_matrix	= self.result_matrix.get_rt_inverse_matrix()
 		self.need_update	= False
+
+		self.frustum.extract_frustum_planes(self.perspective_matrix * self.result_matrix)
 
 		if self.parent != None:
 			self.result_matrix = self.parent.get_transformation_matrix() * self.result_matrix
@@ -40,6 +45,9 @@ class Camera(Transform):
 
 	def get_parent_matrix(self):
 		return self.inverse_matrix
+
+	def get_frustum(self):
+		return self.frustum
 
 
 	# https://antongerdelan.net/opengl/raycasting.html

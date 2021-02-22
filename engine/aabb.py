@@ -22,6 +22,9 @@ class AABB:
     def get_min_max(self):
         return self.min, self.max
 
+    def get_unprojected_min_max(self):
+        return self.unprojected["min"], self.unprojected["max"]
+
     def set_min_max(self, min, max):
         self.min = min
         self.max = max
