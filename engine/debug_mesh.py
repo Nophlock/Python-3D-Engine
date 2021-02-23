@@ -2,6 +2,7 @@
 
 from mesh_buffer_object import MeshBufferObject
 from debug_shapes	import DebugShapes
+from material import Material
 
 class DebugMesh:
 
@@ -9,10 +10,14 @@ class DebugMesh:
         self.scene_mgr = scene_mgr
         self.linked_to = linked_to
         self.old_shape = None
-        self.oild_time_stamp = -1
+        self.old_time_stamp = -1
+        self.material = Material()
 
         self.mesh_buffer_object = MeshBufferObject()
 
+
+    def get_default_material(self):
+        return self.material
 
     def update(self, dt):
 
@@ -26,7 +31,7 @@ class DebugMesh:
             DebugShapes.create_aabb_shape(self, self.old_shape)
 
 
-    def render(self, scene_manager):
+    def render(self):
         self.mesh_buffer_object.render()
 
     def is_animation_root(self):

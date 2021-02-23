@@ -73,6 +73,9 @@ class Shader:
 	def send_matrix_4(self, location, matrix):
 		glUniformMatrix4fv(location, 1, GL_FALSE, (GLfloat * 16 )(*matrix.as_single_array() ) )
 
+	def send_vector4(self, location, array):
+		glUniform4f(location,  array[0], array[1], array[2], array[3] )
+
 	def send_matrix4_array(self, location, matrix_array):
 
 		arr = []

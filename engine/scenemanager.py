@@ -7,6 +7,7 @@ from fpscamera		import FPSCamera
 from texture_pool	import TexturePool
 from debug_mesh		import DebugMesh
 from mesh_loaders	import mesh_loader
+from material		import Material
 
 from engine_math	import vector3
 from engine_math 	import matrix4
@@ -38,8 +39,8 @@ class SceneManager:
 	def create_test_scene(self):
 		self.loader = mesh_loader.MeshLoader(self)
 
-		#self.objects.extend( self.loader.get_meshs("data/models/objs/multiple_meshes.obj") )
-		self.objects.extend( self.loader.get_meshs("data/models/iqms/mrfixit/mrfixit.iqm") )
+		self.objects.extend( self.loader.get_meshs("data/models/objs/multiple_meshes.obj") )
+		#self.objects.extend( self.loader.get_meshs("data/models/iqms/mrfixit/mrfixit.iqm") )
 		self.debug_shapes.append(DebugMesh(self, self.objects[0]) )
 
 		tot_triangles = 0
@@ -65,7 +66,7 @@ class SceneManager:
 
 
 		self.tmp_aabb = self.objects[1].get_aabb()
-		self.shader	= NormalShader()
+		self.shader	= NormalShader(self)
 
 		self.transform = Transform()
 
@@ -127,14 +128,21 @@ class SceneManager:
 
 
 		for i in range(len(self.objects)):
-			shader.prepare_render(self.objects[i])
-			self.objects[i].render(self)
+			mat = self.objects[i].get_default_material()
+
+			shader.prepare_render(self.objects[i], mat)
+			self.objects[i].render()
+			shader.unprepare_render(self.objects[i], mat)
+
 
 		shader.send_matrix_4 (shader.get_location("transformation_matrix") , matrix4.Matrix4())
 
 		for i in range(len(self.debug_shapes)):
-			shader.prepare_render(self.debug_shapes[i])
-			self.debug_shapes[i].render(self)
+			mat = self.debug_shapes[i].get_default_material()
+
+			shader.prepare_render(self.debug_shapes[i], mat)
+			self.debug_shapes[i].render()
+			shader.unprepare_render(self.debug_shapes[i], mat)
 
 
 		shader.unbind()

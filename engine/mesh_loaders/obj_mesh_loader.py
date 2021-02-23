@@ -7,6 +7,7 @@ from pyglet.gl 	import *
 from engine_math import vector3
 from aabb import AABB
 from mesh import Mesh
+from material import Material
 
 FACE_MAPPING = {}
 FACE_MAPPING[3] = [GL_TRIANGLES, 3]
@@ -119,8 +120,11 @@ class OBJMeshLoader:
 
 		base_path = os.path.dirname(file_path)
 		base_name = os.path.basename(os.path.splitext(file_path)[0])
+		materials = []
 
 		if os.path.isfile(base_path + "/" + base_name + ".mtl"):
+
+
 
 			for line in open(base_path + "/" + base_name + ".mtl", "r"):
 
@@ -136,7 +140,14 @@ class OBJMeshLoader:
 					tex_pool.load_texture(values[1], base_path, base_path + "/" + values[1])#load the material texture
 
 					for i in range(len(meshes)):
-						meshes[i]["diffuse_texture"] = values[1]
+						material = Material()
+						material.assign_material("diffuse_texture", values[1])
+
+
+						materials.append(material)
+
+		for i in range(len(meshes)):
+			meshes[i]["material"] = materials[i]
 
 
 		return meshes
@@ -197,9 +208,7 @@ class OBJMeshLoader:
 
 			mesh.set_informations(mesh_infos)
 			mesh.set_aabb(c_data["aabb"])
-
-			if c_data["diffuse_texture"] != "":
-				mesh.assign_material("diffuse", c_data["diffuse_texture"])
+			mesh.assign_default_material( c_data["material"] )
 
 			meshes.append(mesh)
 

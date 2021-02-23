@@ -9,8 +9,9 @@ from engine_math import vector3
 from engine_math import quaternion
 
 from mesh import Mesh
-from iqm_mesh_animation_player import IQMMeshAnimationPlayer
 from aabb import AABB
+from material import Material
+from iqm_mesh_animation_player import IQMMeshAnimationPlayer
 
 VERTEX_ORDER = [
 	"vertices",
@@ -190,8 +191,13 @@ class IQMLoader:
 				mesh_informations["str_name"] = self.resolve_name(text_blob, mesh_informations["name"])
 				mesh_informations["str_material"] = self.resolve_name(text_blob, mesh_informations["material"])
 
-				meshes.append(mesh_informations)
 				tex_pool.load_texture(mesh_informations["str_material"], base_path, mesh_informations["str_material"])#load the material texture
+				material = Material()
+				material.assign_material("diffuse_texture",  mesh_informations["str_material"])
+
+				mesh_informations["material_obj"] = material
+				meshes.append(mesh_informations)
+
 
 
 			mesh_data["animation_data"] = self.load_animation(header, file, text_blob)
@@ -460,7 +466,7 @@ class IQMLoader:
 			mesh.get_buffer().create_buffer()
 			mesh.set_informations(mesh_infos)
 			mesh.set_aabb(data["bboxes"][0])
-			mesh.assign_material("diffuse", data["mesh_informations"][i]["str_material"])
+			mesh.assign_default_material(data["mesh_informations"][i]["material_obj"])
 
 			meshes.append(mesh)
 

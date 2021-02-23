@@ -85,7 +85,12 @@ class FPSCamera(Camera):
 
 			res, t_min, t_max = aabb.intersect_aabb_ray(self.engine.get_scene_manager().transform, ray_pos, ray_dir)
 
-			print(res, t_min, t_max)
+			if res:
+				meshes[0].get_default_material().assign_material("mesh_color", [0.0, 1.0, 0.0, 1.0])
+			else:
+				meshes[0].get_default_material().assign_material("mesh_color", [1.0, 1.0, 1.0, 1.0])
+
+			#print(res, t_min, t_max)
 
 
 		if self.key_mapper.is_key_holded("m_" + str(mouse.MIDDLE)):

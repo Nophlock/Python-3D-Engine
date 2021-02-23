@@ -2,6 +2,7 @@
 
 out vec4 frag_color;
 uniform  float time;
+uniform  vec4 mesh_color;
 
 in vec2 tex_coord;
 in vec3 vertex_position;
@@ -13,9 +14,5 @@ uniform sampler2D diffuse_texture;
 
 void main()
 {
-	//float value = dot(vertex_normal, vec3(0.0, 1.0, 0.0) );
-
-	//frag_color = vertex_blend_weight;
-
-    frag_color = texture(diffuse_texture, tex_coord);
+    frag_color = mesh_color * texture(diffuse_texture, tex_coord);
 }

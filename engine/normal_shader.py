@@ -5,12 +5,14 @@ from shader 	import Shader
 
 class NormalShader(Shader):
 
-	def __init__(self):
+	def __init__(self, scene_mgr):
 		super().__init__()
 
 		self.add_shader( GL_VERTEX_SHADER_ARB	, "data/shaders/normal_shader/normal_vertex.vert"  )
 		self.add_shader( GL_FRAGMENT_SHADER_ARB	, "data/shaders/normal_shader/normal_fragment.frag")
 		self.compile_shader()
+
+		self.scene_mgr = scene_mgr
 
 		self.locations = {}
 		self.locations["time"] = self.get_uniform_location("time")
@@ -19,6 +21,7 @@ class NormalShader(Shader):
 		self.locations["camera_matrix"]	= self.get_uniform_location("camera_matrix")
 		self.locations["bone_matrices"]	= self.get_uniform_location("bone_matrices")
 		self.locations["has_animation"] = self.get_uniform_location("has_animation")
+		self.locations["mesh_color"] = self.get_uniform_location("mesh_color")
 
 
 
@@ -29,7 +32,7 @@ class NormalShader(Shader):
 
 		return self.locations[name]
 
-	def prepare_render(self, mesh):
+	def prepare_render(self, mesh, material):
 
 		if mesh.has_animations():
 			self.send_integer( self.get_location("has_animation"), 1)
@@ -38,3 +41,38 @@ class NormalShader(Shader):
 
 		if mesh.is_animation_root():
 			self.send_matrix3x4_array( self.get_location("bone_matrices"), mesh.get_animation_player().get_animation_matrices())
+
+		if material == None:
+			return
+
+		data = material.get_material_data()
+		self.send_vector4(self.get_location("mesh_color"), data["mesh_color"])
+
+		if "diffuse_texture" in data:
+			tex_pool = self.scene_mgr.get_texture_pool()
+			texture = tex_pool.get_texture(data["diffuse_texture"])
+
+			if texture != None:
+				glEnable(texture["texture"].target)
+				glBindTexture(texture["texture"].target, texture["texture"].id)
+
+
+
+
+
+
+
+	def unprepare_render(self, mesh, material):
+
+		if material == None:
+			return
+
+		data = material.get_material_data()
+
+		if "diffuse_texture" in data:
+			tex_pool = self.scene_mgr.get_texture_pool()
+			texture = tex_pool.get_texture(data["diffuse_texture"])
+
+			if texture != None:
+				glDisable(texture["texture"].target)
+				glBindTexture(texture["texture"].target, 0)
