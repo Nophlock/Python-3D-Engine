@@ -189,7 +189,7 @@ class OBJMeshLoader:
 			mesh_data["ibo"]["size"] = ctypes.sizeof(GLuint * len(c_data["indices"]) )
 			mesh_data["ibo"]["data"] = (GLuint * len(c_data["indices"])) (*c_data["indices"])
 
-			c_data["aabb"].calculate_knots()
+			c_data["aabb"].calculate_base_knots()
 
 			mesh = Mesh(c_data["name"])
 			mesh.get_buffer().prepare_buffer(c_data["type"][0], len(c_data["indices"]),GL_UNSIGNED_INT, mesh_data)

@@ -69,21 +69,11 @@ class Frustum:
 
 
 
-	#todo: This knot stuff actually takes a lot of allocation in the same frame, we should cache it and use the data instead
+ 	#by doing this, we risk some wrong results if the aabb is for example super large so that the corners arent in the frustum
+	#but the face itself is inside of it so todo: check if theres an other way that isnt performance heavy
 	def is_aabb_inside_frustum(self, aabb):
 
-		min,max = aabb.get_unprojected_min_max()
-
-		knots = []
-
-		knots.append(vector3.Vector3(min.x, min.y, min.z)) #000
-		knots.append(vector3.Vector3(min.x, min.y, max.z)) #001
-		knots.append(vector3.Vector3(min.x, max.y, min.z)) #010
-		knots.append(vector3.Vector3(min.x, max.y, max.z)) #011
-		knots.append(vector3.Vector3(max.x, min.y, min.z)) #100
-		knots.append(vector3.Vector3(max.x, min.y, max.z)) #101
-		knots.append(vector3.Vector3(max.x, max.y, min.z)) #110
-		knots.append(vector3.Vector3(max.x, max.y, max.z)) #111
+		knots = aabb.get_transformed_knots()
 
 		for i in range(len(knots)):
 
@@ -92,6 +82,7 @@ class Frustum:
 
 		return False
 
+	#if the point is outside of one planes it cant be inside the frustum itself
 	def is_point_inside_frustum(self, position):
 
 		for plane in self.planes:

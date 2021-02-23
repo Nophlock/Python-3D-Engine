@@ -14,10 +14,12 @@ class AABB:
         self.unprojected["max"] = max
         self.unprojected["cached_transform"] = None
         self.unprojected["modified_stamp"] = -1
-        self.unprojected["knots"] = []
+        self.unprojected["base_knots"] = []
+        self.unprojected["transformed_knots"] = []
 
         if calc_knots:
-            self.calculate_knots()
+            self.calculate_knots("base_knots", min, max)
+            self.unprojected["transformed_knots"] = self.unprojected["base_knots"]#at the beginning they should be the same
 
     def get_min_max(self):
         return self.min, self.max
@@ -33,25 +35,33 @@ class AABB:
         self.unprojected["max"] = max
         self.unprojected["modified_stamp"] = self.unprojected["modified_stamp"] + 1
 
-        self.calculate_knots()
+        self.calculate_knots("base_knots", min, max)
 
 
-    def get_knots(self):
-        return self.unprojected["knots"]
+    def get_base_knots(self):
+        return self.unprojected["base_knots"]
 
-    def calculate_knots(self):
+    def get_transformed_knots(self):
+        return self.unprojected["transformed_knots"]
 
-        min = self.min
-        max = self.max
 
-        self.unprojected["knots"].append(vector3.Vector3(min.x, min.y, min.z)) #000
-        self.unprojected["knots"].append(vector3.Vector3(min.x, min.y, max.z)) #001
-        self.unprojected["knots"].append(vector3.Vector3(min.x, max.y, min.z)) #010
-        self.unprojected["knots"].append(vector3.Vector3(min.x, max.y, max.z)) #011
-        self.unprojected["knots"].append(vector3.Vector3(max.x, min.y, min.z)) #100
-        self.unprojected["knots"].append(vector3.Vector3(max.x, min.y, max.z)) #101
-        self.unprojected["knots"].append(vector3.Vector3(max.x, max.y, min.z)) #110
-        self.unprojected["knots"].append(vector3.Vector3(max.x, max.y, max.z)) #111
+    def calculate_transformed_knots(self):
+        return self.calculate_knots("transformed_knots", self.unprojected["min"], self.unprojected["max"])
+
+    def calculate_base_knots(self):
+        self.calculate_knots("base_knots", self.min, self.max)
+
+    def calculate_knots(self, index, min, max):
+
+        self.unprojected[index] = []
+        self.unprojected[index].append(vector3.Vector3(min.x, min.y, min.z)) #000
+        self.unprojected[index].append(vector3.Vector3(min.x, min.y, max.z)) #001
+        self.unprojected[index].append(vector3.Vector3(min.x, max.y, min.z)) #010
+        self.unprojected[index].append(vector3.Vector3(min.x, max.y, max.z)) #011
+        self.unprojected[index].append(vector3.Vector3(max.x, min.y, min.z)) #100
+        self.unprojected[index].append(vector3.Vector3(max.x, min.y, max.z)) #101
+        self.unprojected[index].append(vector3.Vector3(max.x, max.y, min.z)) #110
+        self.unprojected[index].append(vector3.Vector3(max.x, max.y, max.z)) #111
 
 
 
@@ -99,8 +109,8 @@ class AABB:
         u_max = vector3.Vector3(-math.inf, -math.inf,-math.inf)
 
 
-        for i in range(len(self.unprojected["knots"])):
-            t_vec = matrix.mul_vec3( self.unprojected["knots"][i] )
+        for i in range(len(self.unprojected["base_knots"])):
+            t_vec = matrix.mul_vec3( self.unprojected["base_knots"][i] )
 
             u_min.x = min(t_vec.x, u_min.x)
             u_min.y = min(t_vec.y, u_min.y)
@@ -112,6 +122,7 @@ class AABB:
 
         self.unprojected["min"] = u_min
         self.unprojected["max"] = u_max
+        self.calculate_knots("transformed_knots", u_min, u_max)
 
 
     def check_unprojection_min_max_update(self, transform):
