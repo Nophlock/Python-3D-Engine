@@ -1,6 +1,5 @@
 
 from engine_math import vector3
-from physics import simplex
 
 class GJK:
 
@@ -54,7 +53,7 @@ class GJK:
                 r, simplex_points, c_dir = GJK.tetrahedron_check(simplex_points, c_dir)
 
 
-        return True, simplex.Simplex(simplex_points)
+        return True, simplex_points
 
 
 

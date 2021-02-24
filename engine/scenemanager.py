@@ -9,6 +9,7 @@ from debug_mesh		import DebugMesh
 from mesh_loaders	import mesh_loader
 from material		import Material
 from physics		import gjk
+from physics		import epa
 
 
 from engine_math	import vector3
@@ -79,7 +80,9 @@ class SceneManager:
 		quat = quaternion.Quaternion( vector3.Vector3(0.0, 0.0, -1.0), 3.141 * 0.5).get_axis_quaternion()
 		quat = quat * quaternion.Quaternion( vector3.Vector3(0.0, -1.0, 0.0), 3.141 * 0.5).get_axis_quaternion()
 
-		self.transform.set_local_position ( vector3.Vector3(0.0,-5.0,-10.0))
+		self.t1_position = vector3.Vector3(0.0,-5.0,-10.0)
+
+		self.transform.set_local_position ( self.t1_position)
 		self.transform.set_local_rotation (quat.get_normalized() )
 
 		self.transform2.set_local_position ( vector3.Vector3(5.0,-5.0,-10.0))
@@ -96,10 +99,10 @@ class SceneManager:
 	def update_scene(self, dt):
 		self.camera.update(dt)
 
-		quat = self.transform.get_local_rotation() * quaternion.Quaternion(vector3.Vector3(0.0, 1.0, -1.0), 0.1*dt).get_axis_quaternion()
-		self.transform.set_local_rotation (quat.get_normalized() )
+		quat = self.transform.get_local_rotation() * quaternion.Quaternion(vector3.Vector3(0.0, 1.0, -1.0), 0.05*dt).get_axis_quaternion()
+		self.transform.set_local_rotation ( quaternion.Quaternion.from_axis(vector3.Vector3(), 1.0) )
 
-		self.transform.set_local_position(vector3.Vector3(0.0,-5.0,-10.0) + vector3.Vector3(math.sin(self.time) * 5.0, 0.0, 0.0) )
+		self.transform.set_local_position(self.t1_position + vector3.Vector3(math.sin(self.time) * 5.0, 1.0, 0.0) )
 
 		for i in range(len(self.objects)):
 
@@ -114,9 +117,13 @@ class SceneManager:
 		poly_a = self.objects[0].get_aabb().get_transformed_knots()
 		poly_b = self.objects[1].get_aabb().get_transformed_knots()
 
-		col, _ = gjk.GJK.is_polygon_colliding(poly_a, poly_b)
+		col, simplex = gjk.GJK.is_polygon_colliding(poly_a, poly_b)
 
 		if col:
+			min_normal, min_distance = epa.EPA.get_penetration_data(simplex, poly_a, poly_b)
+
+			self.transform.set_local_position(self.transform.get_local_position() + min_normal * -min_distance)
+
 			self.objects[0].get_default_material().assign_material("mesh_color", [1.0, 0.0, 0.0, 1.0])
 		else:
 			self.objects[0].get_default_material().assign_material("mesh_color", [1.0, 1.0, 1.0, 1.0])

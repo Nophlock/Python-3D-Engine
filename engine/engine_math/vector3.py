@@ -45,9 +45,7 @@ class Vector3:
 
 	def normalize(self):
 		length = self.getLength()
-
-		if length == 0:
-			length = 1
+		if length == 0: length = 1
 
 		self.x = self.x / length
 		self.y = self.y / length
@@ -55,6 +53,8 @@ class Vector3:
 
 	def get_normalized(self):
 		length = self.get_len()
+		if length == 0: length = 1
+
 		return Vector3( self.x / length, self.y / length, self.z / length )
 
 	def __repr__(self):
