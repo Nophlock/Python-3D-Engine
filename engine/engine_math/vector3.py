@@ -10,10 +10,7 @@ class Vector3:
 
 	@staticmethod
 	def unit_x():
-		test = Vector3()
-		test.x = 1.0
-
-		return test
+		return Vector3(1.0,0.0,0.0)
 
 	@staticmethod
 	def unit_y():
@@ -40,7 +37,7 @@ class Vector3:
 						self.z * other.x - self.x * other.z,
 						self.x * other.y - self.y * other.x  )
 
-	def inverse(self):
+	def negate(self):
 		return Vector3(-self.x, -self.y, -self.z)
 
 	def get_len(self):

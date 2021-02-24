@@ -19,10 +19,10 @@ class DebugMesh:
     def get_default_material(self):
         return self.material
 
-    def update(self, dt):
+    def update(self, transform, dt):
 
         aabb = self.linked_to.get_aabb()
-        updated = aabb.check_unprojection_min_max_update(self.scene_mgr.transform)
+        updated = aabb.check_unprojection_min_max_update(transform)
         timestamp = aabb.get_modified_timestamp()
 
         if aabb != self.old_shape or updated or timestamp != self.old_time_stamp:

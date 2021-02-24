@@ -8,6 +8,8 @@ from texture_pool	import TexturePool
 from debug_mesh		import DebugMesh
 from mesh_loaders	import mesh_loader
 from material		import Material
+from physics		import gjk
+
 
 from engine_math	import vector3
 from engine_math 	import matrix4
@@ -39,9 +41,11 @@ class SceneManager:
 	def create_test_scene(self):
 		self.loader = mesh_loader.MeshLoader(self)
 
-		self.objects.extend( self.loader.get_meshs("data/models/objs/multiple_meshes.obj") )
+		self.objects.extend( self.loader.get_meshs("data/models/objs/monkey.obj") )
+		self.objects.extend( self.loader.get_meshs("data/models/objs/monkey.obj") )
 		#self.objects.extend( self.loader.get_meshs("data/models/iqms/mrfixit/mrfixit.iqm") )
 		self.debug_shapes.append(DebugMesh(self, self.objects[0]) )
+		self.debug_shapes.append(DebugMesh(self, self.objects[1]) )
 
 		tot_triangles = 0
 		tot_vertices = 0
@@ -69,6 +73,7 @@ class SceneManager:
 		self.shader	= NormalShader(self)
 
 		self.transform = Transform()
+		self.transform2 = Transform()
 
 		#for testing we say the mesh is at the origin for now
 		quat = quaternion.Quaternion( vector3.Vector3(0.0, 0.0, -1.0), 3.141 * 0.5).get_axis_quaternion()
@@ -76,6 +81,9 @@ class SceneManager:
 
 		self.transform.set_local_position ( vector3.Vector3(0.0,-5.0,-10.0))
 		self.transform.set_local_rotation (quat.get_normalized() )
+
+		self.transform2.set_local_position ( vector3.Vector3(5.0,-5.0,-10.0))
+		self.transform2.set_local_rotation ( quat.get_normalized() )
 
 		for i in range(len(self.objects)):
 
@@ -88,18 +96,30 @@ class SceneManager:
 	def update_scene(self, dt):
 		self.camera.update(dt)
 
+		quat = self.transform.get_local_rotation() * quaternion.Quaternion(vector3.Vector3(0.0, 1.0, -1.0), 0.1*dt).get_axis_quaternion()
+		self.transform.set_local_rotation (quat.get_normalized() )
+
+		self.transform.set_local_position(vector3.Vector3(0.0,-5.0,-10.0) + vector3.Vector3(math.sin(self.time) * 5.0, 0.0, 0.0) )
+
 		for i in range(len(self.objects)):
 
 			if self.objects[i].is_animation_root():
 				self.objects[i].get_animation_player().update(dt)
 
 		for i in range(len(self.debug_shapes)):
-			self.debug_shapes[i].update(dt)
 
+			if i == 0: self.debug_shapes[i].update(self.transform, dt)
+			else: self.debug_shapes[i].update(self.transform2, dt)
 
-		quat = self.transform.get_local_rotation() * quaternion.Quaternion(vector3.Vector3(0.0, 1.0, -1.0), 0.1*dt).get_axis_quaternion()
-		self.transform.set_local_rotation (quat.get_normalized() )
+		poly_a = self.objects[0].get_aabb().get_transformed_knots()
+		poly_b = self.objects[1].get_aabb().get_transformed_knots()
 
+		col, _ = gjk.GJK.is_polygon_colliding(poly_a, poly_b)
+
+		if col:
+			self.objects[0].get_default_material().assign_material("mesh_color", [1.0, 0.0, 0.0, 1.0])
+		else:
+			self.objects[0].get_default_material().assign_material("mesh_color", [1.0, 1.0, 1.0, 1.0])
 
 		self.time = self.time + dt
 
@@ -124,10 +144,15 @@ class SceneManager:
 		shader.send_matrix_4 (shader.get_location("perspective_matrix") , self.camera.get_perspective_matrix() )
 		shader.send_matrix_4 (shader.get_location("camera_matrix") , self.camera.get_transformation_matrix() )
 
-		shader.send_matrix_4 (shader.get_location("transformation_matrix") , self.transform.get_transformation_matrix())
 
 
 		for i in range(len(self.objects)):
+
+			if i == 0:
+				shader.send_matrix_4 (shader.get_location("transformation_matrix") , self.transform.get_transformation_matrix())
+			else:
+				shader.send_matrix_4 (shader.get_location("transformation_matrix") , self.transform2.get_transformation_matrix())
+
 			mat = self.objects[i].get_default_material()
 
 			shader.prepare_render(self.objects[i], mat)

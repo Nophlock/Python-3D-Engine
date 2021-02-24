@@ -122,6 +122,9 @@ class OBJMeshLoader:
 		base_name = os.path.basename(os.path.splitext(file_path)[0])
 		materials = []
 
+		for i in range(len(meshes)):
+			materials.append(Material())
+
 		if os.path.isfile(base_path + "/" + base_name + ".mtl"):
 
 
@@ -140,11 +143,7 @@ class OBJMeshLoader:
 					tex_pool.load_texture(values[1], base_path, base_path + "/" + values[1])#load the material texture
 
 					for i in range(len(meshes)):
-						material = Material()
-						material.assign_material("diffuse_texture", values[1])
-
-
-						materials.append(material)
+						materials[i].assign_material("diffuse_texture", values[1])
 
 		for i in range(len(meshes)):
 			meshes[i]["material"] = materials[i]
