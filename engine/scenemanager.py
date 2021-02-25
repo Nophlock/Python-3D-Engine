@@ -46,7 +46,9 @@ class SceneManager:
 
 	def create_test_scene(self):
 		self.loader = mesh_loader.MeshLoader(self)
-		self.mesh_pool = [ self.loader.get_meshs("data/models/objs/monkey.obj") ]
+		self.mesh_pool = []
+		self.mesh_pool.append(self.loader.get_meshs("data/models/objs/monkey.obj"))
+		#self.mesh_pool.append(self.loader.get_meshs("data/models/iqms/mrfixit/mrfixit.iqm"))
 
 		ent = Entity()
 		ent.add_component(mesh_renderer.MeshRenderer(self.mesh_pool[0]) )
@@ -73,6 +75,9 @@ class SceneManager:
 		self.entities[1].get_transform().set_local_rotation(  quat.get_normalized() )
 		self.entities[1].get_transform().set_local_position( vector3.Vector3(5.0,-5.0,-10.0) )
 
+		self.entities[0].get_component("MeshRenderer").play_animation("idle", 1.0)
+		self.entities[1].get_component("MeshRenderer").play_animation("idle", 1.0)
+
 
 		#for i in range(len(self.objects)):
 
@@ -85,11 +90,6 @@ class SceneManager:
 		for i in range(len(self.entities)):
 			self.entities[i].fixed_update(dt)
 
-
-
-
-	def update(self, dt):
-		self.camera.update(dt)
 
 		if self.stop == False:
 			self.entities[0].get_transform().set_local_position( self.t1_position + vector3.Vector3(math.sin(self.time) * 5.0, 1.0, 0.0) )
@@ -114,6 +114,14 @@ class SceneManager:
 
 		else:
 			self.entities[0].get_component("MeshRenderer").get_materials()[0].assign_material("mesh_color", [1.0, 1.0, 1.0, 1.0])
+
+
+
+
+
+
+	def update(self, dt):
+		self.camera.update(dt)
 
 
 		for i in range(len(self.entities)):

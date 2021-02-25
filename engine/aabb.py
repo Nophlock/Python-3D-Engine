@@ -31,7 +31,6 @@ class AABB:
 
         self.unprojected["min"] = min
         self.unprojected["max"] = max
-        self.unprojected["modified_stamp"] = self.unprojected["modified_stamp"] + 1
 
         self.calculate_knots("base_knots", min, max)
 

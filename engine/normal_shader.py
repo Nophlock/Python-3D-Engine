@@ -34,14 +34,6 @@ class NormalShader(Shader):
 
 	def prepare_render(self, mesh, material):
 
-		if mesh.has_animations():
-			self.send_integer( self.get_location("has_animation"), 1)
-		else:
-			self.send_integer( self.get_location("has_animation"), 0)
-
-		if mesh.is_animation_root():
-			self.send_matrix3x4_array( self.get_location("bone_matrices"), mesh.get_animation_player().get_animation_matrices())
-
 		if material == None:
 			return
 

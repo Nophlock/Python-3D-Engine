@@ -51,12 +51,6 @@ class IQMLoader:
 		mesh_data = self.load_file(file_path)
 		meshes = self.generate_mesh(mesh_data)
 
-		if mesh_data["animation_data"] != None:
-			anim_player = IQMMeshAnimationPlayer(meshes, mesh_data)
-
-			for i in range(len(meshes)):
-				meshes[i].assign_animation_player(anim_player)
-
 		return meshes
 
 
@@ -200,7 +194,10 @@ class IQMLoader:
 
 
 
-			mesh_data["animation_data"] = self.load_animation(header, file, text_blob)
+			anim_data = self.load_animation(header, file, text_blob)
+
+			if anim_data != None:
+				mesh_data["animation_data"] = anim_data
 
 
 			#reads the stored bbox (should be atleast one)
@@ -208,21 +205,26 @@ class IQMLoader:
 
 			file.seek(header["ofs_bounds"])
 
-			for i in range(header["num_frames"]):
-				(min_x,) = struct.unpack("f", file.read(4))
-				(min_y,) = struct.unpack("f", file.read(4))
-				(min_z,) = struct.unpack("f", file.read(4))
 
-				(max_x,) = struct.unpack("f", file.read(4))
-				(max_y,) = struct.unpack("f", file.read(4))
-				(max_z,) = struct.unpack("f", file.read(4))
+			if header["num_frames"] == 0:
+				mesh_data["bboxes"].append(AABB())
+			else:
+				for i in range(header["num_frames"]):
+					(min_x,) = struct.unpack("f", file.read(4))
+					(min_y,) = struct.unpack("f", file.read(4))
+					(min_z,) = struct.unpack("f", file.read(4))
 
-				(xyradius,) = struct.unpack("f", file.read(4))
-				(radius,) = struct.unpack("f", file.read(4))
+					(max_x,) = struct.unpack("f", file.read(4))
+					(max_y,) = struct.unpack("f", file.read(4))
+					(max_z,) = struct.unpack("f", file.read(4))
 
-				aabb = AABB(vector3.Vector3(min_x,min_y,min_z), vector3.Vector3(max_x,max_y,max_z), True)
+					(xyradius,) = struct.unpack("f", file.read(4))
+					(radius,) = struct.unpack("f", file.read(4))
 
-				mesh_data["bboxes"].append(aabb)
+					aabb = AABB(vector3.Vector3(min_x,min_y,min_z), vector3.Vector3(max_x,max_y,max_z), True)
+
+					mesh_data["bboxes"].append(aabb)
+
 
 
 		mesh_data["buffers"] = []
@@ -464,9 +466,14 @@ class IQMLoader:
 			mesh = Mesh(data["mesh_informations"][i]["str_name"] )
 			mesh.get_buffer().prepare_buffer(GL_TRIANGLES, len(used_indices),GL_UNSIGNED_INT, mesh_data)
 			mesh.get_buffer().create_buffer()
-			mesh.set_informations(mesh_infos)
 			mesh.set_aabb(data["bboxes"][0])
 			mesh.assign_default_material(data["mesh_informations"][i]["material_obj"])
+
+			mesh.assign_mesh_data(data)
+			mesh.set_informations(mesh_infos)
+
+			if "animation_data" in data:
+				mesh.set_animation_player_class(IQMMeshAnimationPlayer)
 
 			meshes.append(mesh)
 

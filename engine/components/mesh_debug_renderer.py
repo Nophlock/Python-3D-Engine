@@ -25,6 +25,7 @@ class MeshDebugRenderer(component.Component):
     def render(self, camera, shader):
 
         shader.send_matrix_4 (shader.get_location("transformation_matrix") , self.identity_matrix)
+        shader.send_integer(shader.get_location("has_animation"), 0)
 
         for i in range(len( self.debug_meshes) ):
             shader.prepare_render(self.debug_meshes[i], self.material)

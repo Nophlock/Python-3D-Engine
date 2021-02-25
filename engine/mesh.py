@@ -2,18 +2,19 @@
 from pyglet.gl import *
 
 from mesh_buffer_object import MeshBufferObject
+from iqm_mesh_animation_player import IQMMeshAnimationPlayer
 from aabb import AABB
 
 
 class Mesh:
 
-	#TODO: remove the materials from the mesh and make it its own class so we can reuse the mesh with different materials
+	#TODO: remove the name stuff and use a id system or something like that
 	def __init__(self, name):
-		self.mod_time_stamp = -1
 		self.name = name
-		self.anim_player = None
 		self.aabb = AABB()
+		self.mesh_data = None
 		self.informations = None
+		self.animation_class = None
 
 		self.default_material = None
 		self.mesh_buffer_object = MeshBufferObject()
@@ -29,7 +30,6 @@ class Mesh:
 		return self.name
 
 	def set_aabb(self, aabb):
-		self.mod_time_stamp = self.mod_time_stamp + 1
 		self.aabb = aabb
 
 	def get_aabb(self):
@@ -40,13 +40,8 @@ class Mesh:
 		return self.mod_time_stamp
 
 
-
-	def assign_animation_player(self, anim_player):
-		self.anim_player = anim_player
-
 	def render(self):
 		self.mesh_buffer_object.render()
-
 
 
 	def assign_default_material(self, material):
@@ -61,13 +56,20 @@ class Mesh:
 		return self.mesh_buffer_object
 
 	def has_animations(self):
-		return self.anim_player != None
+		return self.animation_class != None
 
-	def is_animation_root(self):
-		if self.has_animations() and self.anim_player.is_root(self):
-			return True
+	def set_animation_player_class(self, anim_player):
+		self.animation_class = anim_player
 
-		return False
+	def get_animation_player_class(self):
+		return self.animation_class
+
+	def get_new_animation_player(self):
+		return self.animation_class(self.mesh_data)
+
+	def assign_mesh_data(self, mesh_data):
+		self.mesh_data = mesh_data
+
 
 	def get_animation_player(self):
 		return self.anim_player

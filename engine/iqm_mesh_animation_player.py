@@ -8,11 +8,11 @@ from transform 		import Transform
 #https://github.com/ioquake/ioq3/blob/11337c9fa2fa45371182603863164a9186ff2b9e/code/renderergl2/tr_model_iqm.c for match
 class IQMMeshAnimationPlayer:
 
-	def __init__(self, meshes, mesh_data):
-		self.meshes = meshes
+	def __init__(self, mesh_data):
 		self.mesh_data = mesh_data
 		self.anim_data = self.mesh_data["animation_data"]
 
+		self.current_aabb = self.mesh_data["bboxes"][0]
 		self.animations = {}
 		self.bones = {}
 		self.anim_matrices = []
@@ -30,10 +30,7 @@ class IQMMeshAnimationPlayer:
 
 		self.prepare_data()
 
-	def is_root(self, mesh_root):
-		return self.meshes[0] == mesh_root
-
-	#note that we're using a 3x4 matric, since its uses less space, needs less operation (4 per matrices) and its faster to invert
+	#note that we're using a 3x4 matrix, since its uses less space, needs less operation (4 per matrices) and its faster to invert
 	def build_matrix(self, position, rotation, scale):
 
 		matrix = matrix3x4.Matrix3x4.from_matrix4(rotation.to_matrix4())
@@ -97,6 +94,9 @@ class IQMMeshAnimationPlayer:
 	def get_all_aabbs(self):
 		return self.mesh_data["bboxes"]
 
+	def get_current_aabb(self):
+		return self.current_aabb
+
 	def update(self, dt):
 
 		if self.current_animation == "":
@@ -118,10 +118,8 @@ class IQMMeshAnimationPlayer:
 			self.animation_time = bounds[0]
 
 		#TODO: maybe we should interpolate from the current aabb to the next one, just like in the matrices. But is it worth the performance costs?
-		for i in range(len(self.meshes)):
-			self.meshes[i].set_aabb(self.mesh_data["bboxes"][base_frame])
 
-
+		self.current_aabb = self.mesh_data["bboxes"][base_frame]
 		self.calculate_matrices(base_frame, next_frame, time_between)
 
 
