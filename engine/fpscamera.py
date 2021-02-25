@@ -65,8 +65,8 @@ class FPSCamera(Camera):
 
 	def process_mouse_input(self, dt):
 
-		meshes = self.engine.get_scene_manager().objects
-		aabb = meshes[0].get_aabb()
+		entities = self.engine.get_scene_manager().entities
+		aabb = entities[0].get_component("MeshRenderer").get_aabbs()[0]
 
 
 		if self.key_mapper.is_key_holded("m_" + str(mouse.LEFT) ) :
@@ -83,7 +83,7 @@ class FPSCamera(Camera):
 			ray_pos = self.position
 			ray_dir = self.get_mouse_direction()
 
-			res, t_min, t_max = aabb.intersect_aabb_ray(self.engine.get_scene_manager().transform, ray_pos, ray_dir)
+			res, t_min, t_max = aabb.intersect_aabb_ray(entities[0].get_transform(), ray_pos, ray_dir)
 
 			if res:
 				print("inside aabb")
@@ -95,3 +95,7 @@ class FPSCamera(Camera):
 
 		if self.key_mapper.is_key_holded("m_" + str(mouse.MIDDLE)):
 			print(self.frustum.is_aabb_inside_frustum(aabb))
+
+			self.engine.get_scene_manager().stop = True
+		else:
+			self.engine.get_scene_manager().stop = False

@@ -13,3 +13,11 @@ class Material:
 
     def get_material_data(self):
         return self.data
+
+    def get_copy(self):
+        mat = Material()
+
+        for name in self.data:
+            mat.data[name] = self.data[name]
+
+        return mat

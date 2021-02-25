@@ -5,9 +5,9 @@ from engine_math import matrix4
 from engine_math import quaternion
 
 class Transform:
-	def __init__(self):
+	def __init__(self, entity = None):
 
-		self.modified_stamp = -1
+		self.attached_entity = entity
 		self.position 		= vector3.Vector3()
 		self.rotation		= quaternion.Quaternion()
 		self.scale			= vector3.Vector3()
@@ -66,9 +66,6 @@ class Transform:
 		self.childs.append(child)
 		child.parent = self
 
-	def get_modified_stamp(self):
-		return self.modified_stamp
-
 	def rebuild_matrix(self):
 		self.result_matrix	= self.position_matrix * self.rotation_matrix * self.scale_matrix
 		self.need_update	= False
@@ -79,7 +76,8 @@ class Transform:
 		for child in self.childs:
 			child.rebuild_matrix()
 
-		self.modified_stamp = self.modified_stamp + 1
+		if self.attached_entity != None:
+			self.attached_entity.transform_was_modified()
 
 	def get_parent_matrix(self):
 		return self.get_transformation_matrix()

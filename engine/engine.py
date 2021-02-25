@@ -15,6 +15,7 @@ class Engine(pyglet.window.Window):
 
 		self.init()
 		pyglet.clock.schedule( self.update )
+		pyglet.clock.schedule_interval( self.fixed_update, 1.0 / 60.0)#called every 60 fps, fixme invoke it with this, or do it in our own update to avoid asyncs?
 
 		self.set_vsync(False)
 
@@ -36,11 +37,12 @@ class Engine(pyglet.window.Window):
 
 
 
-
+	def fixed_update(self, dt):
+		self.scene_manager.fixed_update(dt)
 
 	def update(self, dt):
 		self.key_mapper.update()
-		self.scene_manager.update_scene(dt)
+		self.scene_manager.update(dt)
 
 		self.frames = self.frames + 1
 		self.frame_tick = self.frame_tick + dt

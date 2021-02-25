@@ -8,7 +8,7 @@ from engine_math import vector3
 #The algorithm tries to find the edge on the minkowski difference which is closest to the origin, if we have them, we calculate
 #the normal of the edge. The main problem/task is to keep the simplex itself intact which means we cant randomly add vertices to our base tetrahedron
 #(otherwise the normal of the edge would be incorrect) so we handle our tetrahedron as a mesh and keep adding
-#points respectively until we find the closes edge on the minkowski difference
+#points respectively until we find the closest edge on the minkowski difference
 class EPA:
 
     #calculate the normals of all faces of the polygon(not a tetrahedron anymore) and returns the index of the vertex which is closest to the origin
@@ -72,7 +72,6 @@ class EPA:
                     1, 3, 2 ]
 
         normals, min_face = EPA.get_face_normals(simplex_points, faces)
-        it = 0
 
         while min_distance == math.inf:
 
@@ -131,8 +130,6 @@ class EPA:
                 faces.extend(new_faces)
                 normals.extend(new_normals)
 
-                it = it + 1
 
-
-
-        return min_normal, min_distance
+        #add a small amount to it, to avoid jiterring and another collision in the next frame
+        return min_normal, min_distance + 0.00001

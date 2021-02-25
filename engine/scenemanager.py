@@ -11,6 +11,10 @@ from material		import Material
 from physics		import gjk
 from physics		import epa
 
+from entity import Entity
+from components import mesh_renderer
+from components import mesh_debug_renderer
+
 
 from engine_math	import vector3
 from engine_math 	import matrix4
@@ -27,9 +31,10 @@ class SceneManager:
 		self.time = 0
 		self.camera 		= FPSCamera(engine)
 		self.texture_pool	= TexturePool()
+		self.shader = NormalShader(self)
 
-		self.objects		= []
-		self.debug_shapes	= []
+		self.entities = []
+		self.stop = False
 
 		self.camera.set_perspective_matrix(70.0, 800.0/600.0, 0.001, 10000.0)
 		self.create_test_scene()
@@ -41,40 +46,20 @@ class SceneManager:
 
 	def create_test_scene(self):
 		self.loader = mesh_loader.MeshLoader(self)
+		self.mesh_pool = [ self.loader.get_meshs("data/models/objs/monkey.obj") ]
 
-		self.objects.extend( self.loader.get_meshs("data/models/objs/monkey.obj") )
-		self.objects.extend( self.loader.get_meshs("data/models/objs/monkey.obj") )
-		#self.objects.extend( self.loader.get_meshs("data/models/iqms/mrfixit/mrfixit.iqm") )
-		self.debug_shapes.append(DebugMesh(self, self.objects[0]) )
-		self.debug_shapes.append(DebugMesh(self, self.objects[1]) )
+		ent = Entity()
+		ent.add_component(mesh_renderer.MeshRenderer(self.mesh_pool[0]) )
+		ent.add_component(mesh_debug_renderer.MeshDebugRenderer())
 
-		tot_triangles = 0
-		tot_vertices = 0
-		tot_bones = 0
+		self.entities.append(ent)
 
-		for i in range(len(self.objects)):
-			info = self.objects[i].get_informations()
+		ent2 = Entity()
+		ent2.add_component(mesh_renderer.MeshRenderer(self.mesh_pool[0]) )
+		ent2.add_component(mesh_debug_renderer.MeshDebugRenderer())
 
-			if info == None:
-				continue
+		self.entities.append(ent2)
 
-			tot_triangles = tot_triangles + info["num_triangles"]
-			tot_vertices = tot_vertices + info["num_vertices"]
-
-			if self.objects[i].is_animation_root():
-				tot_bones = tot_bones + info["num_bones"]
-
-		print("[Scene stats]")
-		print("Total triangles: ", tot_triangles)
-		print("Total vertices: ", tot_vertices)
-		print("Total bones: ", tot_bones)
-
-
-		self.tmp_aabb = self.objects[1].get_aabb()
-		self.shader	= NormalShader(self)
-
-		self.transform = Transform()
-		self.transform2 = Transform()
 
 		#for testing we say the mesh is at the origin for now
 		quat = quaternion.Quaternion( vector3.Vector3(0.0, 0.0, -1.0), 3.141 * 0.5).get_axis_quaternion()
@@ -82,53 +67,57 @@ class SceneManager:
 
 		self.t1_position = vector3.Vector3(0.0,-5.0,-10.0)
 
-		self.transform.set_local_position ( self.t1_position)
-		self.transform.set_local_rotation (quat.get_normalized() )
+		self.entities[0].get_transform().set_local_rotation( quaternion.Quaternion.from_axis(vector3.Vector3(), 1.0) )
+		self.entities[0].get_transform().set_local_position( self.t1_position )
 
-		self.transform2.set_local_position ( vector3.Vector3(5.0,-5.0,-10.0))
-		self.transform2.set_local_rotation ( quat.get_normalized() )
-
-		for i in range(len(self.objects)):
-
-			if self.objects[i].has_animations():
-				anim_names = self.objects[i].get_animation_player().get_animation_names()
-				self.objects[i].get_animation_player().play_animation("idle", 1.0)
+		self.entities[1].get_transform().set_local_rotation(  quat.get_normalized() )
+		self.entities[1].get_transform().set_local_position( vector3.Vector3(5.0,-5.0,-10.0) )
 
 
+		#for i in range(len(self.objects)):
 
-	def update_scene(self, dt):
+		#	if self.objects[i].has_animations():
+		#		anim_names = self.objects[i].get_animation_player().get_animation_names()
+		#		self.objects[i].get_animation_player().play_animation("idle", 1.0)
+
+	def fixed_update(self, dt):
+
+		for i in range(len(self.entities)):
+			self.entities[i].fixed_update(dt)
+
+
+
+
+	def update(self, dt):
 		self.camera.update(dt)
 
-		quat = self.transform.get_local_rotation() * quaternion.Quaternion(vector3.Vector3(0.0, 1.0, -1.0), 0.05*dt).get_axis_quaternion()
-		self.transform.set_local_rotation ( quaternion.Quaternion.from_axis(vector3.Vector3(), 1.0) )
+		if self.stop == False:
+			self.entities[0].get_transform().set_local_position( self.t1_position + vector3.Vector3(math.sin(self.time) * 5.0, 1.0, 0.0) )
+			self.time = self.time + dt
 
-		self.transform.set_local_position(self.t1_position + vector3.Vector3(math.sin(self.time) * 5.0, 1.0, 0.0) )
+		#this is a hacky solution to avoid jittering, which is caused by the matrix not recalculating in this frame and therefore not updating the aabb (so our knots point at
+		# a position where the meshes didnt collide, which cause flickering)
+		# this will works for now until i come up with something better than this (if this is even required since this is only for testing here)
+		self.entities[0].get_transform().get_transformation_matrix()
 
-		for i in range(len(self.objects)):
-
-			if self.objects[i].is_animation_root():
-				self.objects[i].get_animation_player().update(dt)
-
-		for i in range(len(self.debug_shapes)):
-
-			if i == 0: self.debug_shapes[i].update(self.transform, dt)
-			else: self.debug_shapes[i].update(self.transform2, dt)
-
-		poly_a = self.objects[0].get_aabb().get_transformed_knots()
-		poly_b = self.objects[1].get_aabb().get_transformed_knots()
+		poly_a = self.entities[0].get_component("MeshRenderer").get_aabb().get_transformed_knots()
+		poly_b = self.entities[1].get_component("MeshRenderer").get_aabb().get_transformed_knots()
 
 		col, simplex = gjk.GJK.is_polygon_colliding(poly_a, poly_b)
+
 
 		if col:
 			min_normal, min_distance = epa.EPA.get_penetration_data(simplex, poly_a, poly_b)
 
-			self.transform.set_local_position(self.transform.get_local_position() + min_normal * -min_distance)
+			self.entities[0].get_transform().set_local_position(self.entities[0].get_transform().get_local_position() + min_normal * -min_distance)
+			self.entities[0].get_component("MeshRenderer").get_materials()[0].assign_material("mesh_color", [1.0, 0.0, 0.0, 1.0])
 
-			self.objects[0].get_default_material().assign_material("mesh_color", [1.0, 0.0, 0.0, 1.0])
 		else:
-			self.objects[0].get_default_material().assign_material("mesh_color", [1.0, 1.0, 1.0, 1.0])
+			self.entities[0].get_component("MeshRenderer").get_materials()[0].assign_material("mesh_color", [1.0, 1.0, 1.0, 1.0])
 
-		self.time = self.time + dt
+
+		for i in range(len(self.entities)):
+			self.entities[i].update(dt)
 
 
 	def resize_viewport(self, width, height):
@@ -151,31 +140,8 @@ class SceneManager:
 		shader.send_matrix_4 (shader.get_location("perspective_matrix") , self.camera.get_perspective_matrix() )
 		shader.send_matrix_4 (shader.get_location("camera_matrix") , self.camera.get_transformation_matrix() )
 
-
-
-		for i in range(len(self.objects)):
-
-			if i == 0:
-				shader.send_matrix_4 (shader.get_location("transformation_matrix") , self.transform.get_transformation_matrix())
-			else:
-				shader.send_matrix_4 (shader.get_location("transformation_matrix") , self.transform2.get_transformation_matrix())
-
-			mat = self.objects[i].get_default_material()
-
-			shader.prepare_render(self.objects[i], mat)
-			self.objects[i].render()
-			shader.unprepare_render(self.objects[i], mat)
-
-
-		shader.send_matrix_4 (shader.get_location("transformation_matrix") , matrix4.Matrix4())
-
-		for i in range(len(self.debug_shapes)):
-			mat = self.debug_shapes[i].get_default_material()
-
-			shader.prepare_render(self.debug_shapes[i], mat)
-			self.debug_shapes[i].render()
-			shader.unprepare_render(self.debug_shapes[i], mat)
-
+		for i in range(len(self.entities)):
+			self.entities[i].render(camera, shader)
 
 		shader.unbind()
 

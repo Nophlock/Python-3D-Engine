@@ -41,9 +41,12 @@ class MeshBufferObject:
 
 	def __del__(self):
 
-		if(self.is_build == True):
-			pass#glDeleteBuffers		(1, ctypes.pointer(self.vbo_index) )
-			#glDeleteVertexArrays(1, ctypes.pointer(self.vao_index) )
+		if self.is_build:
+
+			glDeleteVertexArrays(1, self.vao_index)
+
+			for entry in self.buffer_index:
+				glDeleteBuffers(1,self.buffer_index[entry]["index"])
 
 	def create_buffer(self):
 
