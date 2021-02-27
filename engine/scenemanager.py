@@ -47,7 +47,8 @@ class SceneManager:
 	def create_test_scene(self):
 		self.loader = mesh_loader.MeshLoader(self)
 		self.mesh_pool = []
-		self.mesh_pool.append(self.loader.get_meshs("data/models/objs/monkey.obj"))
+		self.mesh_pool.append(self.loader.get_meshs("data/models/objs/cube.obj"))
+		self.mesh_pool.append(self.loader.get_meshs("data/models/objs/ground_box.obj"))
 		#self.mesh_pool.append(self.loader.get_meshs("data/models/iqms/mrfixit/mrfixit.iqm"))
 
 		ent = Entity()
@@ -61,6 +62,12 @@ class SceneManager:
 		ent2.add_component(mesh_debug_renderer.MeshDebugRenderer())
 
 		self.entities.append(ent2)
+
+		ent3 = Entity()
+		ent3.add_component(mesh_renderer.MeshRenderer(self.mesh_pool[1]) )
+		ent3.add_component(mesh_debug_renderer.MeshDebugRenderer())
+
+		self.entities.append(ent3)
 
 
 		#for testing we say the mesh is at the origin for now
@@ -77,6 +84,9 @@ class SceneManager:
 
 		self.entities[0].get_component("MeshRenderer").play_animation("idle", 1.0)
 		self.entities[1].get_component("MeshRenderer").play_animation("idle", 1.0)
+
+		self.entities[2].get_transform().set_local_position( vector3.Vector3(0.0, -8, 0.0) )
+		self.entities[2].get_component("MeshRenderer").get_materials()[0].assign_material("mesh_color", [0.5, 0.5, 0.5, 1.0])
 
 
 		#for i in range(len(self.objects)):
@@ -107,7 +117,8 @@ class SceneManager:
 
 		col = m_render_1.get_aabb().is_aabb_inside_aabb(m_render_2.get_aabb())
 
-		if col == True:
+		if col:
+
 			poly_a = m_render_1.get_aabb().get_transformed_knots()
 			poly_b = m_render_2.get_aabb().get_transformed_knots()
 

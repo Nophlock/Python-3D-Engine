@@ -25,7 +25,6 @@ class EPA:
             c = simplex_points[ faces[i+2] ]
 
             normal = (b-a).cross(c-a).get_normalized()
-
             distance = normal.dot(a)
 
             if distance < 0:
@@ -53,10 +52,10 @@ class EPA:
                 reverse = i
                 break
 
-        if reverse != len(edges) - 1:
+        if reverse != -1 and reverse != len(edges) - 1:
             del edges[reverse]
-
-        edges.append([faces[a], faces[b]] )
+        else:
+            edges.append([faces[a], faces[b]] )
 
         return edges
 
@@ -69,7 +68,8 @@ class EPA:
         faces = [   0, 1, 2,
                     0, 3, 1,
                     0, 2, 3,
-                    1, 3, 2 ]
+                    1, 3, 2
+                ]
 
         normals, min_face = EPA.get_face_normals(simplex_points, faces)
 
@@ -132,4 +132,4 @@ class EPA:
 
 
         #add a small amount to it, to avoid jiterring and another collision in the next frame
-        return min_normal, min_distance + 0.00001
+        return min_normal, min_distance + 0.001
