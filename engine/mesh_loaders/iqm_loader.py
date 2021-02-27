@@ -128,7 +128,8 @@ class IQMLoader:
 				vertex_arrays.append(vertex_data)
 
 
-
+			center_of_mass_values = []
+			center_of_mass_vector = vector3.Vector3()
 
 			for i in range(len(vertex_arrays)):
 				data = []
@@ -153,10 +154,21 @@ class IQMLoader:
 					else:
 						print("IQM-Loader: Not implemented datatype - ", gl_type)
 
+					if i == 0:
+						center_of_mass_values.append(value)
+
+						if len(center_of_mass_values) == 3:
+							center_of_mass_vector = center_of_mass_vector + vector3.Vector3(center_of_mass_values[0], center_of_mass_values[1], center_of_mass_values[2])
+							center_of_mass_values = []
+
 
 					data.append( value )
 
 				vertex_arrays[i]["data"] = data
+
+			#calculate the center of mass as a centroid
+			center_of_mass_vector = center_of_mass_vector / ( vertex_arrays[0]["num_entries"] / 3)
+			mesh_data["center_of_mass"] = center_of_mass_vector
 
 			#reads the ibo-data
 			file.seek(header["ofs_triangle"])

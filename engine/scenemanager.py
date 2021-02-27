@@ -91,32 +91,37 @@ class SceneManager:
 			self.entities[i].fixed_update(dt)
 
 
+	def custom_test_update(self, dt):
+
 		if self.stop == False:
 			self.entities[0].get_transform().set_local_position( self.t1_position + vector3.Vector3(math.sin(self.time) * 5.0, 1.0, 0.0) )
 			self.time = self.time + dt
+
+		m_render_1 = self.entities[0].get_component("MeshRenderer")
+		m_render_2 = self.entities[1].get_component("MeshRenderer")
 
 		#this is a hacky solution to avoid jittering, which is caused by the matrix not recalculating in this frame and therefore not updating the aabb (so our knots point at
 		# a position where the meshes didnt collide, which cause flickering)
 		# this will works for now until i come up with something better than this (if this is even required since this is only for testing here)
 		self.entities[0].get_transform().get_transformation_matrix()
 
-		poly_a = self.entities[0].get_component("MeshRenderer").get_aabb().get_transformed_knots()
-		poly_b = self.entities[1].get_component("MeshRenderer").get_aabb().get_transformed_knots()
+		col = m_render_1.get_aabb().is_aabb_inside_aabb(m_render_2.get_aabb())
 
-		col, simplex = gjk.GJK.is_polygon_colliding(poly_a, poly_b)
+		if col == True:
+			poly_a = m_render_1.get_aabb().get_transformed_knots()
+			poly_b = m_render_2.get_aabb().get_transformed_knots()
+
+			col, simplex = gjk.GJK.is_polygon_colliding(poly_a, poly_b)
 
 
 		if col:
 			min_normal, min_distance = epa.EPA.get_penetration_data(simplex, poly_a, poly_b)
 
 			self.entities[0].get_transform().set_local_position(self.entities[0].get_transform().get_local_position() + min_normal * -min_distance)
-			self.entities[0].get_component("MeshRenderer").get_materials()[0].assign_material("mesh_color", [1.0, 0.0, 0.0, 1.0])
+			m_render_1.get_materials()[0].assign_material("mesh_color", [1.0, 0.0, 0.0, 1.0])
 
 		else:
-			self.entities[0].get_component("MeshRenderer").get_materials()[0].assign_material("mesh_color", [1.0, 1.0, 1.0, 1.0])
-
-
-
+			m_render_1.get_materials()[0].assign_material("mesh_color", [1.0, 1.0, 1.0, 1.0])
 
 
 
@@ -126,6 +131,8 @@ class SceneManager:
 
 		for i in range(len(self.entities)):
 			self.entities[i].update(dt)
+
+		self.custom_test_update(dt)
 
 
 	def resize_viewport(self, width, height):

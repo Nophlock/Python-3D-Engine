@@ -55,6 +55,7 @@ class OBJMeshLoader:
 
 				mesh_data = {}
 
+				mesh_data["center_of_mass"] = vector3.Vector3()
 				mesh_data["name"] = values[1]
 				mesh_data["type"] = GL_TRIANGLES
 
@@ -72,6 +73,10 @@ class OBJMeshLoader:
 				global_data["raw_vertices"].append(x)
 				global_data["raw_vertices"].append(y)
 				global_data["raw_vertices"].append(z)
+
+				mesh_data["center_of_mass"].x += x
+				mesh_data["center_of_mass"].y += y
+				mesh_data["center_of_mass"].z += z
 
 				mesh_data["aabb"].min.x = min(mesh_data["aabb"].min.x, x)
 				mesh_data["aabb"].min.y = min(mesh_data["aabb"].min.y, y)
@@ -123,6 +128,7 @@ class OBJMeshLoader:
 		materials = []
 
 		for i in range(len(meshes)):
+			meshes[i]["center_of_mass"] = meshes[i]["center_of_mass"] / (len(meshes[i]["vertices"]) / 3)
 			materials.append(Material())
 
 		if os.path.isfile(base_path + "/" + base_name + ".mtl"):
@@ -165,6 +171,7 @@ class OBJMeshLoader:
 			mesh_infos["num_triangles"] = len(c_data["indices"]) / 3
 			mesh_infos["num_vertices"] = len(c_data["vertices"])
 			mesh_infos["num_bones"] = 0 #objs doesnt have any bones
+			mesh_infos["center_of_mass"] = c_data["center_of_mass"]
 
 			mesh_data["vbo"] = {}
 			mesh_data["vbo"]["type"] = GL_ARRAY_BUFFER
