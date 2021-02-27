@@ -29,16 +29,16 @@ class PhysicsEngine:
 
                 o_comp = self.physics_entities[j][1]
                 o_aabb = o_comp.get_collision_aabb()
+                collision = aabb.is_aabb_inside_aabb(o_aabb)
 
-
-                if aabb.is_aabb_inside_aabb(o_aabb):
+                if collision:
 
                     poly_a = self.physics_entities[i][1].get_collision_polygon()
                     poly_b = self.physics_entities[j][1].get_collision_polygon()
 
-                    col, simplex = gjk.GJK.is_polygon_colliding(poly_a, poly_b)
+                    collision, simplex = gjk.GJK.is_polygon_colliding(poly_a, poly_b)
 
-                    if col:
+                    if collision:
 
                         pack = [ self.physics_entities[i], self.physics_entities[j] ]
 
@@ -52,7 +52,7 @@ class PhysicsEngine:
                         self.physics_entities[i][1].eval_collision(self.physics_entities[j], min_normal, min_distance)
 
 
-                else:
+                if collision == False:
                     pack = [ self.physics_entities[i], self.physics_entities[j] ]
 
                     if pack in self.collided_entities:
