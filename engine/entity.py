@@ -3,7 +3,8 @@ from transform import Transform
 
 class Entity:
 
-    def __init__(self):
+    def __init__(self, scene_mgr):
+        self.scene_mgr = scene_mgr
         self.transform = Transform(self)
         self.components = {}
 
@@ -14,6 +15,9 @@ class Entity:
 
     def get_transform(self):
         return self.transform
+
+    def get_scene_manager(self):
+        return self.scene_mgr
 
     def add_component(self, comp):
         comp.set_attached_to(self)

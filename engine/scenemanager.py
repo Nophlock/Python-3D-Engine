@@ -8,12 +8,13 @@ from texture_pool	import TexturePool
 from debug_mesh		import DebugMesh
 from mesh_loaders	import mesh_loader
 from material		import Material
-from physics		import gjk
-from physics		import epa
+
+from physics_engine import PhysicsEngine
 
 from entity import Entity
 from components import mesh_renderer
 from components import mesh_debug_renderer
+from components import static_body
 
 
 from engine_math	import vector3
@@ -29,9 +30,10 @@ class SceneManager:
 		self.engine	= engine
 
 		self.time = 0
-		self.camera 		= FPSCamera(engine)
-		self.texture_pool	= TexturePool()
+		self.camera = FPSCamera(engine)
+		self.texture_pool = TexturePool()
 		self.shader = NormalShader(self)
+		self.physics_engine = PhysicsEngine(self)
 
 		self.entities = []
 		self.stop = False
@@ -51,21 +53,24 @@ class SceneManager:
 		self.mesh_pool.append(self.loader.get_meshs("data/models/objs/ground_box.obj"))
 		#self.mesh_pool.append(self.loader.get_meshs("data/models/iqms/mrfixit/mrfixit.iqm"))
 
-		ent = Entity()
+		ent = Entity(self)
 		ent.add_component(mesh_renderer.MeshRenderer(self.mesh_pool[0]) )
 		ent.add_component(mesh_debug_renderer.MeshDebugRenderer())
+		ent.add_component(static_body.StaticBody())
 
 		self.entities.append(ent)
 
-		ent2 = Entity()
+		ent2 = Entity(self)
 		ent2.add_component(mesh_renderer.MeshRenderer(self.mesh_pool[0]) )
 		ent2.add_component(mesh_debug_renderer.MeshDebugRenderer())
+		ent2.add_component(static_body.StaticBody())
 
 		self.entities.append(ent2)
 
-		ent3 = Entity()
+		ent3 = Entity(self)
 		ent3.add_component(mesh_renderer.MeshRenderer(self.mesh_pool[1]) )
 		ent3.add_component(mesh_debug_renderer.MeshDebugRenderer())
+		ent3.add_component(static_body.StaticBody())
 
 		self.entities.append(ent3)
 
@@ -97,6 +102,8 @@ class SceneManager:
 
 	def fixed_update(self, dt):
 
+		self.physics_engine.fixed_update(dt)
+
 		for i in range(len(self.entities)):
 			self.entities[i].fixed_update(dt)
 
@@ -106,33 +113,6 @@ class SceneManager:
 		if self.stop == False:
 			self.entities[0].get_transform().set_local_position( self.t1_position + vector3.Vector3(math.sin(self.time) * 5.0, 1.0, 0.0) )
 			self.time = self.time + dt
-
-		m_render_1 = self.entities[0].get_component("MeshRenderer")
-		m_render_2 = self.entities[1].get_component("MeshRenderer")
-
-		#this is a hacky solution to avoid jittering, which is caused by the matrix not recalculating in this frame and therefore not updating the aabb (so our knots point at
-		# a position where the meshes didnt collide, which cause flickering)
-		# this will works for now until i come up with something better than this (if this is even required since this is only for testing here)
-		self.entities[0].get_transform().get_transformation_matrix()
-
-		col = m_render_1.get_aabb().is_aabb_inside_aabb(m_render_2.get_aabb())
-
-		if col:
-
-			poly_a = m_render_1.get_aabb().get_transformed_knots()
-			poly_b = m_render_2.get_aabb().get_transformed_knots()
-
-			col, simplex = gjk.GJK.is_polygon_colliding(poly_a, poly_b)
-
-
-		if col:
-			min_normal, min_distance = epa.EPA.get_penetration_data(simplex, poly_a, poly_b)
-
-			self.entities[0].get_transform().set_local_position(self.entities[0].get_transform().get_local_position() + min_normal * -min_distance)
-			m_render_1.get_materials()[0].assign_material("mesh_color", [1.0, 0.0, 0.0, 1.0])
-
-		else:
-			m_render_1.get_materials()[0].assign_material("mesh_color", [1.0, 1.0, 1.0, 1.0])
 
 
 
@@ -152,6 +132,9 @@ class SceneManager:
 
 	def get_texture_pool(self):
 		return self.texture_pool
+
+	def get_physics_engine(self):
+		return self.physics_engine
 
 
 	def render(self):
