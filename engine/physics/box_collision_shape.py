@@ -2,6 +2,7 @@
 
 from physics import collision_shape
 from engine_math import vector3
+from engine_math import matrix3
 
 class BoxCollisionShape(collision_shape.CollisionShape):
 
@@ -24,3 +25,11 @@ class BoxCollisionShape(collision_shape.CollisionShape):
         self.collision_base_points.append(vector3.Vector3(h_w, h_h, h_d)) #111
 
         self.transformed_collision_points = self.collision_base_points
+
+    def calculate_intertia_tensor(self, mass):
+
+        self.inertia_tensor = matrix3.Matrix3()
+        intertia_cube = (1.0 / 12.0) * mass * 2.0
+
+        self.inertia_tensor.set_scale(intertia_cube, intertia_cube, intertia_cube)
+        self.inv_inertia_tensor = self.inertia_tensor.get_inverse()

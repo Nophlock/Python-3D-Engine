@@ -2,6 +2,7 @@ import math
 
 from engine_math import vector3
 from engine_math import matrix4
+from engine_math import matrix3
 
 #todo, maybe we should switch to x,y,z components instead of an vector3 for performance reasons
 
@@ -181,10 +182,10 @@ class Quaternion:
 		a = self
 		b = other
 
-		n_w = a.w * b.w 		- a.axis.x * b.axis.x 	- a.axis.y * b.axis.y - a.axis.z * b.axis.z
-		n_x = a.w * b.axis.x 	+ a.axis.x * b.w 		+ a.axis.y * b.axis.z - a.axis.z * b.axis.y
-		n_y = a.w * b.axis.y 	+ a.axis.y * b.w 		+ a.axis.z * b.axis.x - a.axis.x * b.axis.z
-		n_z = a.w * b.axis.z 	+ a.axis.z * b.w 		+ a.axis.x * b.axis.y - a.axis.y * b.axis.x
+		n_w = a.w * b.w 		- a.axis.x * b.axis.x 	- a.axis.y * b.axis.y 	- a.axis.z * b.axis.z
+		n_x = a.w * b.axis.x 	+ a.axis.x * b.w 		+ a.axis.y * b.axis.z 	- a.axis.z * b.axis.y
+		n_y = a.w * b.axis.y 	- a.axis.x * b.axis.z 	+ a.axis.y * b.w 		+ a.axis.z * b.axis.x
+		n_z = a.w * b.axis.z 	+ a.axis.x * b.axis.y 	- a.axis.y * b.axis.x 	+ a.axis.z * b.w
 
 		return Quaternion(vector3.Vector3(n_x,n_y,n_z), n_w)
 
@@ -200,6 +201,36 @@ class Quaternion:
 	def __repr__(self):
 		return 'X = ' + str( round( self.axis.x, 4) ).ljust(8, '0')[0:8] + '\nY = ' + str( round( self.axis.y, 4) ).ljust(8, '0')[0:8] + '\nZ = ' + str( round( self.axis.z, 4) ).ljust(8, '0')[0:8] + '\nW = ' + str( round( self.w, 4) ).ljust(8, '0')[0:8] + '\n'
 
+
+	def to_matrix3(self):
+		result = matrix3.Matrix3()
+		a = result.m
+
+		xx = 2.0 * self.axis.x * self.axis.x
+		xy = 2.0 * self.axis.x * self.axis.y
+		xz = 2.0 * self.axis.x * self.axis.z
+		xw = 2.0 * self.axis.x * self.w
+
+		yy = 2.0 * self.axis.y * self.axis.y
+		yz = 2.0 * self.axis.y * self.axis.z
+		yw = 2.0 * self.axis.y * self.w
+
+		zz = 2.0 * self.axis.z * self.axis.z
+		zw = 2.0 * self.axis.z * self.w
+
+		a[0][0] = 1.0 - yy - zz
+		a[0][1] = xy+zw
+		a[0][2] = xz-yw
+
+		a[1][0] = xy - zw
+		a[1][1] = 1.0 - xx - zz
+		a[1][2] = yz + xw
+
+		a[2][0] = xz + yw
+		a[2][1] = yz - xw
+		a[2][2] = 1.0 - xx - yy
+
+		return result
 
 	#from https://paroj.github.io/gltut/Positioning/Tut08%20Quaternions.html
 	def to_matrix4(self):

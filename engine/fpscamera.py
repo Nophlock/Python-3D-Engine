@@ -80,9 +80,9 @@ class FPSCamera(Camera):
 			self.update_rotation_matrix()
 
 		if self.key_mapper.is_key_holded("m_" + str(mouse.RIGHT)):
-			self.engine.get_scene_manager().stop = True
+			self.engine.get_scene_manager().grab = True
 		else:
-			self.engine.get_scene_manager().stop = False
+			self.engine.get_scene_manager().grab = False
 			#ray_pos = self.position
 			#ray_dir = self.get_mouse_direction()
 

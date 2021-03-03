@@ -3,6 +3,7 @@ from components import physics_component
 from engine_math import vector3
 from engine_math import quaternion
 from engine_math import matrix3
+from engine_math import matrix4
 
 import math
 
@@ -11,37 +12,23 @@ class RigidBody(physics_component.PhysicsComponent):
     def __init__(self, col_shape):
         super().__init__(col_shape)
 
-
-        #motion part
-        self.center_of_mass = vector3.Vector3()
-        self.momementum = vector3.Vector3()
-
-        #dt
-        self.velocity = vector3.Vector3()
-        self.force = vector3.Vector3()
-
         self.mass = 1.0
         self.inv_mass = 1.0 / self.mass
 
-        self.restitution = 0.5
+        self.col_shape.calculate_intertia_tensor(self.mass)
 
-        self.friction = 0.5
-        self.dynamic_friction = 0.6
+        self.world_rotational_inertia = self.col_shape.get_inertia_tensor()
+        self.inv_world_rotational_inertia = self.col_shape.get_inverse_inertia_tensor()
 
-        #rotation part
+        self.local_centroid = self.col_shape.get_centroid()
+        self.world_centroid = self.local_centroid
+
+        self.linear_velocity = vector3.Vector3()
         self.angular_velocity = vector3.Vector3()
 
+        self.force_accumulator = vector3.Vector3()
+        self.torque_accumulator = vector3.Vector3()
 
-        self.rotational_inertia = matrix3.Matrix3()
-        self.inv_rotational_inertia = self.rotational_inertia
-
-        #https://en.wikipedia.org/wiki/List_of_moments_of_inertia
-        intertia_cube = (1.0 / 12.0) * self.mass * 2.0
-
-        self.rotational_inertia.set_scale(intertia_cube, intertia_cube, intertia_cube)
-        self.inv_rotational_inertia = self.rotational_inertia.get_inverse()
-
-        #print(self.rotational_inertia * self.inv_rotational_inertia)
 
 
     def get_name(self):
@@ -54,79 +41,100 @@ class RigidBody(physics_component.PhysicsComponent):
 
 
     def apply_force(self, f, position):
-        self.force = f
-        self.torque = f.cross(position - self.center_of_mass)
+        self.force_accumulator = self.force_accumulator + f
+        self.torque_accumulator = self.torque_accumulator + (position - self.world_centroid).cross(f)
 
+    def apply_central_force(self, force):
+        self.apply_force(force, self.world_centroid)
+
+    #updates our centroid based on our transform values
+    def update_global_centroid_from_position(self):
+        transform = self.attached_entity.transform
+        rot = matrix3.Matrix3.from_matrix4(transform.get_local_rotation_matrix())
+        self.world_centroid = rot.mul_vec3(self.local_centroid) + transform.get_local_position()
+
+    #updates our transform based on our centroid value and orientation
+    def update_position_from_global_centroid(self):
+        transform = self.attached_entity.transform
+        rot = matrix3.Matrix3.from_matrix4(transform.get_local_rotation_matrix())
+        transform.set_local_position(rot.mul_vec3(self.local_centroid.negate()) + self.world_centroid)
 
 
     def fixed_update(self, dt):
-        transform = self.attached_entity.get_transform()
+        transform = self.attached_entity.transform
 
-        #apply force (here we use gravity )
-        self.force = self.force + self.physics_engine.get_gravity() * self.mass
-        self.velocity = self.velocity + (self.force / self.mass) * dt
+        #apply some gravity so we have something to see
+        self.apply_central_force(self.attached_entity.scene_mgr.get_physics_engine().get_gravity() * self.mass)
 
-        #apply rotation
+        self.linear_velocity = self.linear_velocity + self.force_accumulator * self.inv_mass * dt
+        self.angular_velocity = self.angular_velocity + self.inv_world_rotational_inertia.mul_vec3(self.torque_accumulator) * dt
 
-        angl_vel = self.rotational_inertia.mul_vec3(self.angular_velocity)
-        spin = quaternion.Quaternion(angl_vel).mul_value(0.5) * transform.rotation
+        #reset force and torque so that an push doesnt happened forever
+        self.force_accumulator = vector3.Vector3()
+        self.torque_accumulator = vector3.Vector3()
+
+        #integrate velocity
+        self.world_centroid = self.world_centroid + self.linear_velocity * dt
+
+        #integrate rotation
+        spin = quaternion.Quaternion(self.angular_velocity, 0.0).mul_value(0.5) * transform.rotation
+        new_rot = transform.rotation + spin.mul_value(dt)
+
+        transform.set_local_rotation( new_rot.get_normalized() )
+        self.update_position_from_global_centroid()
+
+        rot_mat = matrix3.Matrix3.from_matrix4(transform.get_local_rotation_matrix())
+        self.world_rotational_inertia = rot_mat * self.col_shape.get_inertia_tensor() * rot_mat.get_transpose()
+        self.inv_world_rotational_inertia = self.world_rotational_inertia.get_inverse()
 
 
-        new_pos = transform.get_local_position() + self.velocity * dt
-        new_rot = transform.get_local_rotation() + spin.mul_value(dt)
-
-        transform.set_local_position(new_pos)
-        transform.set_local_rotation(new_rot.get_normalized() )
-
-        self.force = vector3.Vector3()
 
 
     #based on https://en.wikipedia.org/wiki/Collision_response#Impulse-Based_Reaction_Model
     def eval_collision(self, entity, col_points, normal, depth):
 
         #seperate object from the other one
-        n = normal.negate()
-        self.attached_entity.get_transform().set_local_position(self.attached_entity.get_transform().get_local_position() + n * depth)
+        self.world_centroid = self.world_centroid - normal * depth
 
+        #calulate impulse
+        n = normal
+        v = self.linear_velocity.negate() #v2 - v1 but for now only static collision
 
-        #perform rigid body calculation
-        v = vector3.Vector3() - self.velocity#is the relative velocity (since for now we use a static body, its only our own velocity)
-
-        vel_along_normal = v.dot(n)
-
-        if vel_along_normal < 0:#dont resolve if they are going to resolve anyway
+        #they going to resolve anyway
+        if v.dot(n) > 0:
             return
 
-        r1 = col_points[0] - self.attached_entity.transform.get_local_position()
-        r2 = col_points[1] - entity[0].transform.get_local_position()
+        r1 = col_points[0] - self.world_centroid
+        e = 0.5
 
-        e = min(self.restitution , self.restitution )
+        jr = (-(1.0+e)*v.dot(n)) / (self.inv_mass + (self.inv_world_rotational_inertia.mul_vec3(r1.cross(n)).cross(r1)).dot(n) )
 
-        jr_u = -(1.0+e)*vel_along_normal
-        jr_d = self.inv_mass + (self.inv_rotational_inertia.mul_vec3(r1.cross(n)).cross(r1) ).dot(n)
-        jr = jr_u / jr_d
+        self.linear_velocity = self.linear_velocity - (n * jr * self.inv_mass)
+        self.angular_velocity = self.angular_velocity - ( (self.inv_world_rotational_inertia.mul_vec3(r1.cross(n))) * jr)
 
-
-        self.velocity = self.velocity - (n * jr) * self.inv_mass
-        self.angular_velocity = self.angular_velocity - self.inv_rotational_inertia.mul_vec3(r1.cross(n)) * jr
-
-
-        #friction
-        t = (v - normal * v.dot(normal)).get_normalized()
-        jt_d = -(1.0+self.friction)*v.dot(t) / (self.inv_mass + (self.inv_rotational_inertia.mul_vec3(r1.cross(t)).cross(r1) ).dot(t) )
+        #friction calulation (static needs to be bigger than dynamic)
+        jr_m = jr
+        f_s = 1.0
+        f_d = 0.8
 
 
+        js = jr_m * f_s
+        jd = jr_m * f_d
 
-        #friction_impulse = vector3.Vector3()
+        t = (v - (n * n.dot(v)) ).get_normalized()
+        jf = 0
 
-        #if abs(jt_d) < jr_u * self.friction:
-        #    friction_impulse = t * jt_d
-        #else:
-        #    friction_impulse = t * (-jr * self.friction)
+        if v.dot(t) == 0 and v.dot(t)*self.mass < js:
+            jf = -(v.dot(t) * self.mass)
+        else:
+            jf = -jd
 
-        #self.velocity = self.velocity + friction_impulse * self.inv_mass
-        #self.angular_velocity = self.angular_velocity + self.inv_rotational_inertia.mul_vec3(friction_impulse) * jt_d
 
+
+        #self.linear_velocity = self.linear_velocity - (t * jf * self.inv_mass )
+        #self.angular_velocity = self.angular_velocity - ( (self.inv_world_rotational_inertia.mul_vec3(r1.cross(t))) * jf)
+
+        #self.update_position_from_global_centroid()
 
 
 
@@ -135,3 +143,8 @@ class RigidBody(physics_component.PhysicsComponent):
 
     def collision_stopped(self, collided_with):
         pass#self.attached_entity.get_component("MeshRenderer").get_materials()[0].assign_material("mesh_color", [1.0, 1.0, 1.0, 1.0])
+
+
+    def transform_was_modified(self, transform):
+        super().transform_was_modified(transform)
+        self.update_global_centroid_from_position()

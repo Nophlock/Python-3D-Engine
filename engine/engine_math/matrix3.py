@@ -153,7 +153,7 @@ class Matrix3:
 				self.m[x][y] = self.m[y][x]
 
 	def get_transpose(self):
-		result = Matrix4()
+		result = Matrix3()
 
 		for x in range(0,3):
 			for y in range(0,3):
@@ -252,6 +252,25 @@ class Matrix3:
 	#only uses the rotation part
 	@staticmethod
 	def from_matrix3x4(c):
+		m = Matrix3()
+
+		m.m[0][0] = c.m[0][0]
+		m.m[0][1] = c.m[0][1]
+		m.m[0][2] = c.m[0][2]
+
+		m.m[1][0] = c.m[1][0]
+		m.m[1][1] = c.m[1][1]
+		m.m[1][2] = c.m[1][2]
+
+		m.m[2][0] = c.m[2][0]
+		m.m[2][1] = c.m[2][1]
+		m.m[2][2] = c.m[2][2]
+
+		return m
+
+	#only uses the rotation part
+	@staticmethod
+	def from_matrix4(c):
 		m = Matrix3()
 
 		m.m[0][0] = c.m[0][0]

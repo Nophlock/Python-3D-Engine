@@ -43,7 +43,7 @@ class SceneManager:
 		self.physics_engine = PhysicsEngine(self)
 
 		self.entities = []
-		self.stop = False
+		self.grab = False
 
 		self.camera.set_perspective_matrix(70.0, 800.0/600.0, 0.001, 10000.0)
 		self.create_test_scene()
@@ -93,7 +93,6 @@ class SceneManager:
 		self.entities.append(ent4)
 
 
-
 		#for testing we say the mesh is at the origin for now
 		quat = quaternion.Quaternion( vector3.Vector3(0.0, 0.0, -1.0), 3.141 * 0.5).get_axis_quaternion()
 		quat = quat * quaternion.Quaternion( vector3.Vector3(0.0, -1.0, 0.0), 3.141 * 0.5).get_axis_quaternion()
@@ -127,11 +126,12 @@ class SceneManager:
 
 	def custom_test_update(self, dt):
 
-		if self.stop == True:
+		if self.grab == True:
 			self.entities[0].get_transform().set_local_position( self.camera.get_local_position() + vector3.Vector3(0.0, -2.0, 0.0) )
-			self.entities[0].get_component("RigidBody").velocity = vector3.Vector3()
+			self.entities[0].get_component("RigidBody").linear_velocity = vector3.Vector3()
 			self.entities[0].get_component("RigidBody").angular_velocity = vector3.Vector3()
-			self.time = self.time + dt
+
+		self.time = self.time + dt
 
 
 	def update(self, dt):

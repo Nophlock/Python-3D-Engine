@@ -474,6 +474,26 @@ class Matrix4:
 
 		return m
 
+	@staticmethod
+	def from_matrix3(c):
+		m = Matrix4()
+
+		m.m[0][0] = c.m[0][0]
+		m.m[0][1] = c.m[0][1]
+		m.m[0][2] = c.m[0][2]
+
+		m.m[1][0] = c.m[1][0]
+		m.m[1][1] = c.m[1][1]
+		m.m[1][2] = c.m[1][2]
+
+		m.m[2][0] = c.m[2][0]
+		m.m[2][1] = c.m[2][1]
+		m.m[2][2] = c.m[2][2]
+
+		m.m[3][3] = 1.0
+
+		return m
+
 
 	def __mul__(self, other):
 		result = Matrix4()
