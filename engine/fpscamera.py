@@ -80,22 +80,21 @@ class FPSCamera(Camera):
 			self.update_rotation_matrix()
 
 		if self.key_mapper.is_key_holded("m_" + str(mouse.RIGHT)):
-			ray_pos = self.position
-			ray_dir = self.get_mouse_direction()
+			self.engine.get_scene_manager().stop = True
+		else:
+			self.engine.get_scene_manager().stop = False
+			#ray_pos = self.position
+			#ray_dir = self.get_mouse_direction()
 
-			res, t_min, t_max = aabb.intersect_aabb_ray(entities[0].get_transform(), ray_pos, ray_dir)
+			#res, t_min, t_max = aabb.intersect_aabb_ray(entities[0].get_transform(), ray_pos, ray_dir)
 
-			if res:
-				print("inside aabb")
-			else:
-				print("outside aabb")
+			#if res:
+			#	print("inside aabb")
+			#else:
+			#	print("outside aabb")
 
 			#print(res, t_min, t_max)
 
 
 		if self.key_mapper.is_key_holded("m_" + str(mouse.MIDDLE)):
 			print(self.frustum.is_aabb_inside_frustum(aabb))
-
-			self.engine.get_scene_manager().stop = True
-		else:
-			self.engine.get_scene_manager().stop = False

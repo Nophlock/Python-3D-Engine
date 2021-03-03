@@ -22,6 +22,7 @@ class NormalShader(Shader):
 		self.locations["bone_matrices"]	= self.get_uniform_location("bone_matrices")
 		self.locations["has_animation"] = self.get_uniform_location("has_animation")
 		self.locations["mesh_color"] = self.get_uniform_location("mesh_color")
+		self.locations["has_texture"] = self.get_uniform_location("has_texture")
 
 
 
@@ -44,9 +45,13 @@ class NormalShader(Shader):
 			tex_pool = self.scene_mgr.get_texture_pool()
 			texture = tex_pool.get_texture(data["diffuse_texture"])
 
+			self.send_integer(self.get_location("has_texture"), 1)
+
 			if texture != None:
 				glEnable(texture["texture"].target)
 				glBindTexture(texture["texture"].target, texture["texture"].id)
+		else:
+			self.send_integer(self.get_location("has_texture"), 0)
 
 
 

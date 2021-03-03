@@ -10,7 +10,7 @@ class Matrix4:
 		self.m = [[1.0,0.0,0.0,0.0], [0.0,1.0,0.0,0.0], [0.0,0.0,1.0,0.0], [0.0, 0.0, 0.0,1.0]]
 
 
-	def getValues(self):
+	def get_values(self):
 		return self.m
 
 
@@ -100,7 +100,7 @@ class Matrix4:
 	def get_z_vector(self):
 		return vector3.Vector3(self.m[0][2], self.m[1][2], self.m[2][2])
 
-	def setRotationX(self, angle):
+	def set_rotation_x(self, angle):
 
 		result_sin = math.sin(angle)
 		result_cos = math.cos(angle)
@@ -111,7 +111,7 @@ class Matrix4:
 		self.m[1][2] = result_sin
 		self.m[2][2] = result_cos
 
-	def setRotationY(self, angle):
+	def set_rotation_y(self, angle):
 
 		result_sin = math.sin(angle)
 		result_cos = math.cos(angle)
@@ -123,7 +123,7 @@ class Matrix4:
 		self.m[2][2] = result_cos
 
 
-	def setRotationZ(self, angle):
+	def set_rotation_z(self, angle):
 
 		result_sin = math.sin(angle)
 		result_cos = math.cos(angle)

@@ -22,6 +22,9 @@ class AABB:
     def get_min_max(self):
         return self.min, self.max
 
+    def get_size(self):
+        return self.max - self.min
+
     def get_projected_min_max(self):
         return self.projected["min"], self.projected["max"]
 

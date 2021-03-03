@@ -173,6 +173,10 @@ class Quaternion:
 		return Quaternion(vector3.Vector3(n_x,n_y,n_z), n_w)
 
 
+	def mul_value(self, val):
+		return Quaternion(self.axis * val, self.w * val)
+
+
 	def __mul__(self, other):
 		a = self
 		b = other

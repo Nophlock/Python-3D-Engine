@@ -10,11 +10,16 @@ from mesh_loaders	import mesh_loader
 from material		import Material
 
 from physics_engine import PhysicsEngine
+from debug_shapes import DebugShapes
 
 from entity import Entity
 from components import mesh_renderer
 from components import mesh_debug_renderer
 from components import static_body
+from components import rigid_body
+from components import primitive_render
+
+from physics import box_collision_shape
 
 
 from engine_math	import vector3
@@ -23,6 +28,7 @@ from engine_math	import quaternion
 
 import random
 import math
+import time
 
 class SceneManager:
 
@@ -30,6 +36,7 @@ class SceneManager:
 		self.engine	= engine
 
 		self.time = 0
+
 		self.camera = FPSCamera(engine)
 		self.texture_pool = TexturePool()
 		self.shader = NormalShader(self)
@@ -56,30 +63,42 @@ class SceneManager:
 		ent = Entity(self)
 		ent.add_component(mesh_renderer.MeshRenderer(self.mesh_pool[0]) )
 		ent.add_component(mesh_debug_renderer.MeshDebugRenderer())
-		ent.add_component(static_body.StaticBody())
+
+		b_size = self.mesh_pool[0][0].get_aabb().get_size()
+		ent.add_component(rigid_body.RigidBody(box_collision_shape.BoxCollisionShape(b_size.x, b_size.y, b_size.z) ) )
 
 		self.entities.append(ent)
 
 		ent2 = Entity(self)
 		ent2.add_component(mesh_renderer.MeshRenderer(self.mesh_pool[0]) )
 		ent2.add_component(mesh_debug_renderer.MeshDebugRenderer())
-		ent2.add_component(static_body.StaticBody())
+
+		b_size = self.mesh_pool[0][0].get_aabb().get_size()
+		ent2.add_component(static_body.StaticBody(box_collision_shape.BoxCollisionShape(b_size.x, b_size.y, b_size.z) ) )
 
 		self.entities.append(ent2)
 
 		ent3 = Entity(self)
 		ent3.add_component(mesh_renderer.MeshRenderer(self.mesh_pool[1]) )
 		ent3.add_component(mesh_debug_renderer.MeshDebugRenderer())
-		ent3.add_component(static_body.StaticBody())
+
+		b_size = self.mesh_pool[1][0].get_aabb().get_size()
+		ent3.add_component(static_body.StaticBody(box_collision_shape.BoxCollisionShape(b_size.x, -b_size.y, b_size.z) ) )
 
 		self.entities.append(ent3)
+
+		ent4 = Entity(self)
+		ent4.add_component(primitive_render.PrimitiveRender(DebugShapes.create_box_shape(b_size.x * 0.5, b_size.y, b_size.z) ) )
+
+		self.entities.append(ent4)
+
 
 
 		#for testing we say the mesh is at the origin for now
 		quat = quaternion.Quaternion( vector3.Vector3(0.0, 0.0, -1.0), 3.141 * 0.5).get_axis_quaternion()
 		quat = quat * quaternion.Quaternion( vector3.Vector3(0.0, -1.0, 0.0), 3.141 * 0.5).get_axis_quaternion()
 
-		self.t1_position = vector3.Vector3(0.0,-5.0,-10.0)
+		self.t1_position = vector3.Vector3(0.0,5.0,-10.0)
 
 		self.entities[0].get_transform().set_local_rotation( quaternion.Quaternion.from_axis(vector3.Vector3(), 1.0) )
 		self.entities[0].get_transform().set_local_position( self.t1_position )
@@ -93,12 +112,8 @@ class SceneManager:
 		self.entities[2].get_transform().set_local_position( vector3.Vector3(0.0, -8, 0.0) )
 		self.entities[2].get_component("MeshRenderer").get_materials()[0].assign_material("mesh_color", [0.5, 0.5, 0.5, 1.0])
 
+		self.entities[3].get_transform().set_local_position( vector3.Vector3(0.0, -8, 0.0) )
 
-		#for i in range(len(self.objects)):
-
-		#	if self.objects[i].has_animations():
-		#		anim_names = self.objects[i].get_animation_player().get_animation_names()
-		#		self.objects[i].get_animation_player().play_animation("idle", 1.0)
 
 	def fixed_update(self, dt):
 
@@ -107,23 +122,29 @@ class SceneManager:
 		for i in range(len(self.entities)):
 			self.entities[i].fixed_update(dt)
 
+		self.custom_test_update(dt)
+
 
 	def custom_test_update(self, dt):
 
-		if self.stop == False:
-			self.entities[0].get_transform().set_local_position( self.t1_position + vector3.Vector3(math.sin(self.time) * 5.0, 1.0, 0.0) )
+		if self.stop == True:
+			self.entities[0].get_transform().set_local_position( self.camera.get_local_position() + vector3.Vector3(0.0, -2.0, 0.0) )
+			self.entities[0].get_component("RigidBody").velocity = vector3.Vector3()
+			self.entities[0].get_component("RigidBody").angular_velocity = vector3.Vector3()
 			self.time = self.time + dt
 
 
-
 	def update(self, dt):
-		self.camera.update(dt)
 
+		self.camera.update(dt)
 
 		for i in range(len(self.entities)):
 			self.entities[i].update(dt)
 
-		self.custom_test_update(dt)
+
+
+
+
 
 
 	def resize_viewport(self, width, height):

@@ -3,6 +3,9 @@ from components import component
 
 class PhysicsComponent(component.Component):
 
+    def __init__(self, col_shape):
+        self.col_shape = col_shape
+
     def get_name(self):
         return "PhysicsComponent"
 
@@ -14,11 +17,13 @@ class PhysicsComponent(component.Component):
         return self.attached_entity.get_component("MeshRenderer").get_aabb()
 
     def get_collision_polygon(self):
+        return self.col_shape.get_transformed_points()
 
-        return self.get_collision_aabb().get_transformed_knots()
+    def get_center_of_mass(self):
+        return self.attached_entity.get_component("MeshRenderer").get_meshes()[0].get_informations()["center_of_mass"]
 
 
-    def eval_collision(self, collided_with, normal, depth):
+    def eval_collision(self, entity, col_points, normal, depth):
         pass
 
     def collision_started(self, collided_with):
@@ -26,3 +31,6 @@ class PhysicsComponent(component.Component):
 
     def collision_stopped(self, collided_with):
         pass
+
+    def transform_was_modified(self, transform):
+        self.col_shape.transform_was_changed(transform)

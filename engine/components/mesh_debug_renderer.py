@@ -9,6 +9,7 @@ from debug_shapes import DebugShapes
 from mesh import Mesh
 
 
+
 class MeshDebugRenderer(component.Component):
 
     def __init__(self):
@@ -47,6 +48,4 @@ class MeshDebugRenderer(component.Component):
         aabbs = renderer.get_aabbs()
 
         for i in range(len(aabbs)):
-            mesh = Mesh("dbg")
-            DebugShapes.create_aabb_shape(mesh, aabbs[i] )
-            self.debug_meshes.append(mesh)
+            self.debug_meshes.append(DebugShapes.create_aabb_shape(aabbs[i] ) )
