@@ -136,15 +136,11 @@ class SceneManager:
 
 	def update(self, dt):
 
+		self.time = self.time + dt
 		self.camera.update(dt)
 
 		for i in range(len(self.entities)):
 			self.entities[i].update(dt)
-
-
-
-
-
 
 
 	def resize_viewport(self, width, height):
@@ -166,7 +162,7 @@ class SceneManager:
 
 		shader.bind()
 
-		shader.send_float (shader.get_location("time") , abs( math.sin( 0.0 ) / 2.0 ) + 0.5 )
+		shader.send_float (shader.get_location("time") , self.time )
 		shader.send_matrix_4 (shader.get_location("perspective_matrix") , self.camera.get_perspective_matrix() )
 		shader.send_matrix_4 (shader.get_location("camera_matrix") , self.camera.get_transformation_matrix() )
 

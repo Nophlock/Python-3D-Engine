@@ -40,7 +40,7 @@ class EPA:
 
     #based on https://github.com/kevinmoran/GJK/blob/master/GJK.h#L172 since his algorithm seems more robust then the other(or i implemented the other one wrong)
     @staticmethod
-    def get_penetration_data(simplex_points, polygon_a, polygon_b):
+    def get_penetration_data(simplex_points, polygon_a,mat_a, polygon_b, mat_b):
 
         a = simplex_points[0]
         b = simplex_points[1]
@@ -158,6 +158,7 @@ class EPA:
         min_distance = min_normal.dot(p[VECTOR])
 
         contact_points = []
+        local_contact_points = []
 
         point_on_closest_triangle = min_normal * min_distance
         closest_triangle_a = faces[closest_face][0][VECTOR]
@@ -177,11 +178,29 @@ class EPA:
         contact_point_a = polygon_triangle_a_0 * v + polygon_triangle_a_1 * w + polygon_triangle_a_2 * u
         contact_point_b = polygon_triangle_b_0 * v + polygon_triangle_b_1 * w + polygon_triangle_b_2 * u
 
-        push = min_normal * -min_distance
-
-        contact_points.append(contact_point_a + push)
+        #note that our contact points should be inside of the mesh not on top of them
+        contact_points.append(contact_point_a - min_normal * min_distance)
         contact_points.append(contact_point_b)
 
+        local_contact_points.append(mat_a.get_inverse().mul_vec3(contact_point_a))
+        local_contact_points.append(mat_b.get_inverse().mul_vec3(contact_point_b))
 
-        #add a small amount to it, to avoid jiterring and another collision in the next frame
-        return contact_points, min_normal, min_distance + 0.001, faces
+        #based on http://allenchou.net/2013/12/game-physics-contact-generation-epa/
+        if min_normal.x >= 0.57735:
+            t = vector3.Vector3(min_normal.y, -min_normal.x, 0.0)
+        else:
+            t = vector3.Vector3(0.0, min_normal.z, -min_normal.y)
+
+        t1 = t.get_normalized()
+        t2 = min_normal.cross(t1)
+
+        data = {}
+        data["contact_points"] = contact_points
+        data["local_contact_points"] = local_contact_points
+        data["tangents"] = [t1, t2]
+        data["min_normal"] = min_normal
+        data["min_distance"] = min_distance
+        data["seperation_point"] = min_normal * min_distance
+
+
+        return data

@@ -10,7 +10,7 @@ class CollisionShape:
         self.inv_inertia_tensor = None
 
 
-    def calculate_intertia_tensor(self, mass):
+    def calculate_inertia_tensor(self, mass):
         pass
 
     def get_center_of_mass(self):
@@ -40,6 +40,7 @@ class CollisionShape:
         for i in range(len(self.collision_base_points)):
             centroid = centroid + self.collision_base_points[i]
 
-        centroid = centroid * (1.0 / len(self.collision_base_points))
+        centroid = centroid * len(self.collision_base_points)
+
 
         return centroid

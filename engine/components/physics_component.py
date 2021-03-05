@@ -23,7 +23,7 @@ class PhysicsComponent(component.Component):
         return self.attached_entity.get_component("MeshRenderer").get_meshes()[0].get_informations()["center_of_mass"]
 
 
-    def eval_collision(self, entity, col_points, normal, depth):
+    def eval_collision(self, entity, collision_data):
         pass
 
     def collision_started(self, collided_with):

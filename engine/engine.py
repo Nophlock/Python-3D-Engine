@@ -21,7 +21,7 @@ class Engine(pyglet.window.Window):
 
 		self.frame_tick = 0.0
 		self.frames = 0
-		self.physic_engine_fps = 100
+		self.physic_engine_fps = 60
 		self.physic_engine_delta = 1.0 / self.physic_engine_fps
 
 		self.accumulator = 0.0
@@ -45,18 +45,21 @@ class Engine(pyglet.window.Window):
 	def update(self, dt):
 
 		current_time = time.time()
-		self.accumulator = self.accumulator + current_time - self.frame_start
+		frame_time = current_time - self.frame_start
+		self.accumulator = self.accumulator + frame_time
 		self.frame_start = current_time
+
 
 		#avoid infinity loop if the updates goes to slow
 		if self.accumulator > 0.2:
 			self.accumulator = 0.2
 
 
-		while(self.accumulator > dt):
+		while self.accumulator > self.physic_engine_delta:
 			self.scene_manager.fixed_update(self.physic_engine_delta)
 			self.accumulator = self.accumulator - self.physic_engine_delta
 
+		alpha = self.accumulator / self.physic_engine_delta #remaing time can be used for interpolation(currently unused)
 
 
 		#this stuff here should run seperatly from our physics engine

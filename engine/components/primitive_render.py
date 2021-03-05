@@ -13,13 +13,11 @@ from pyglet.gl 		import *
 
 class PrimitiveRender(component.Component):
 
-    def __init__(self, primitive_mesh):
+    def __init__(self, primitive_mesh, material = Material()):
         super().__init__()
 
-        self.material = Material()
         self.primitive = primitive_mesh
-
-        self.material.assign_material("mesh_color", [1.0, 1.0, 1.0, 1.0])
+        self.material = material
 
     def get_name(self):
         return "PrimitiveRender"

@@ -20,7 +20,7 @@ void main()
 
     if (has_texture == 0)
     {
-        color = vec4(vertex_position, 1.0);
+        color = vec4(1.0);
     }
 
     frag_color = mesh_color * color;

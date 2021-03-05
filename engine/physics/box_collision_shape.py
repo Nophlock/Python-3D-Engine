@@ -26,7 +26,7 @@ class BoxCollisionShape(collision_shape.CollisionShape):
 
         self.transformed_collision_points = self.collision_base_points
 
-    def calculate_intertia_tensor(self, mass):
+    def calculate_inertia_tensor(self, mass):
 
         self.inertia_tensor = matrix3.Matrix3()
         intertia_cube = (1.0 / 12.0) * mass * 2.0
