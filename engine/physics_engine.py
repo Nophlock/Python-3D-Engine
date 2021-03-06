@@ -16,7 +16,6 @@ class PhysicsEngine:
 	def __init__(self, scene_mgr):
 		self.scene_mgr = scene_mgr
 		self.physics_entities = []
-		self.collided_entities = []
 
 		self.gravity = vector3.Vector3(0.0, -9.81, 0.0)
 
@@ -24,7 +23,7 @@ class PhysicsEngine:
 
 
 	def add_physics_object(self, entity, resolver):
-		self.physics_entities.append([entity, resolver])
+		self.physics_entities.append([entity, resolver, False])
 
 
 	def get_gravity(self):
@@ -39,17 +38,36 @@ class PhysicsEngine:
 		for i in range(len(self.physics_entities)):
 
 			if self.physics_entities[i][1].get_name() == "RigidBody":
+
+				#if self.physics_entities[i][1].linear_velocity.get_len() < 0.1 and self.physics_entities[i][1].angular_velocity.get_len() < 0.5:
+				#	self.physics_entities[i][1].set_awake(False)
+
+				#	self.physics_entities[i][1].linear_velocity = vector3.Vector3()
+				#	self.physics_entities[i][1].angular_velocity = vector3.Vector3()
+
+				#else:
+				#	self.physics_entities[i][1].set_awake(True)
+
 				self.physics_entities[i][1].apply_central_force(self.get_gravity())
+
+
+
 
 		self.perform_collision_check(dt)
 
 
 	def perform_collision_check(self, dt):
 
+		collisions = []
+
+		#first iteration, track all collisions and store them in a table
 		for i in range( len(self.physics_entities) ):
 
-			comp = self.physics_entities[i][1]
+			ent = self.physics_entities[i]
+			comp = ent[1]
 			aabb = comp.get_collision_aabb()
+
+			collision_data = []
 
 			for j in range( len(self.physics_entities) ):
 
@@ -58,66 +76,44 @@ class PhysicsEngine:
 
 				o_comp = self.physics_entities[j][1]
 				o_aabb = o_comp.get_collision_aabb()
-				collision = aabb.is_aabb_inside_aabb(o_aabb)
+				intersect = aabb.is_aabb_inside_aabb(o_aabb)
 
-				if collision:
+				if intersect:
 
 					poly_a = self.physics_entities[i][1].get_collision_polygon()
 					poly_b = self.physics_entities[j][1].get_collision_polygon()
 
-					collision, simplex = gjk.GJK.is_polygon_colliding(poly_a, poly_b)
+					intersect, simplex = gjk.GJK.is_polygon_colliding(poly_a, poly_b)
 
-					if collision:
-						pack = [ self.physics_entities[i], self.physics_entities[j] ]
-
-						if pack not in self.collided_entities:
-							self.physics_entities[i][1].collision_started(self.physics_entities[j])
-							self.physics_entities[j][1].collision_started(self.physics_entities[i])
-
-							self.collided_entities.append([ self.physics_entities[i], self.physics_entities[j] ])
+					if intersect:
 
 						mat_a = self.physics_entities[i][0].get_transform().get_transformation_matrix()
 						mat_b = self.physics_entities[j][0].get_transform().get_transformation_matrix()
 
-						collision_data = epa.EPA.get_penetration_data(simplex, poly_a,mat_a, poly_b, mat_b)
+						penetration_data = epa.EPA.get_penetration_data(simplex, poly_a,mat_a, poly_b, mat_b)
+						collision_data.append([i,j, penetration_data])
 
-						for k in range(8):
-							self.physics_entities[i][1].eval_collision(self.physics_entities[j], collision_data)
 
-						#fixme this is a workaround to prevent the objects from glitching through(also introduces mor flickering),
-						#in the future we need a better way to solve
-						if self.physics_entities[i][1].get_name() == "RigidBody":
-							#seperate object from the other one (its bad practice to use this, since it introduces funky behavior)
-							self.physics_entities[i][1].world_centroid = self.physics_entities[i][1].world_centroid - collision_data["seperation_point"]
+				if len(collision_data) != 0:
+					collisions.append(collision_data)
+				else:
 
-						"""
-						if self.debug_contact < 0.0:
-							col_points = collision_data["contact_points"]
-
-							mat1 = Material()
-							mat2 = Material()
-
-							mat1.assign_material("mesh_color", [1.0, 0.0, 0.0, 1.0])
-							mat2.assign_material("mesh_color", [0.0, 1.0, 0.0, 1.0])
-
-							mats = [mat1,mat2]
-
-							for z in range(len(col_points)):
-								ent = Entity(self)
-								ent.add_component(primitive_render.PrimitiveRender(DebugShapes.create_point_shape(col_points[z], 0.25, 8, 8 ), mats[z] ) )
-								self.scene_mgr.entities.append(ent)
-
-							self.debug_contact = 2.0
-						"""
+					if ent[2] == True:
+						comp.collision_stopped()
+						ent[2] = False
 
 
 
+		for i in range(len(collisions)):
+			col = collisions[i]
+			ent = self.physics_entities[col[0][0]]
+			col_count = len(col)
+			force_distribution = 1.0 / col_count
 
+			if ent[2] == False:
+				ent[1].collision_started(col)
+				ent[2] = True
 
-				if collision == False:
-					pack = [ self.physics_entities[i], self.physics_entities[j] ]
-
-					if pack in self.collided_entities:
-						pack[0][1].collision_stopped(pack[1])
-						pack[1][1].collision_stopped(pack[1])
-						self.collided_entities.remove(pack)
+			for j in range(col_count):
+				col[j][2]["force_distribution"] = force_distribution
+				ent[1].eval_collision(col[j][1],col[j][2])

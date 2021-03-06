@@ -155,8 +155,9 @@ class EPA:
             print("warning, epa couldnt find the closes triangle point")
 
         min_normal = search_dir
-        min_distance = min_normal.dot(p[VECTOR])
+        min_distance = min_normal.dot(p[VECTOR]) + 0.0001
 
+        #this method here will only give one collision point
         contact_points = []
         local_contact_points = []
 
@@ -171,19 +172,13 @@ class EPA:
         polygon_triangle_a_1 = polygon_a[ faces[closest_face][1][1] ]
         polygon_triangle_a_2 = polygon_a[ faces[closest_face][2][1] ]
 
-        polygon_triangle_b_0 = polygon_b[ faces[closest_face][0][2] ]
-        polygon_triangle_b_1 = polygon_b[ faces[closest_face][1][2] ]
-        polygon_triangle_b_2 = polygon_b[ faces[closest_face][2][2] ]
+        contact_point = polygon_triangle_a_0 * v + polygon_triangle_a_1 * w + polygon_triangle_a_2 * u
 
-        contact_point_a = polygon_triangle_a_0 * v + polygon_triangle_a_1 * w + polygon_triangle_a_2 * u
-        contact_point_b = polygon_triangle_b_0 * v + polygon_triangle_b_1 * w + polygon_triangle_b_2 * u
+        #note that our contact point should be inside of the mesh not on top of them
+        contact_points.append(contact_point - min_normal * min_distance)
 
-        #note that our contact points should be inside of the mesh not on top of them
-        contact_points.append(contact_point_a - min_normal * min_distance)
-        contact_points.append(contact_point_b)
-
-        local_contact_points.append(mat_a.get_inverse().mul_vec3(contact_point_a))
-        local_contact_points.append(mat_b.get_inverse().mul_vec3(contact_point_b))
+        local_contact_points.append(mat_a.get_inverse().mul_vec3(contact_point))
+        local_contact_points.append(mat_b.get_inverse().mul_vec3(contact_point))
 
         #based on http://allenchou.net/2013/12/game-physics-contact-generation-epa/
         if min_normal.x >= 0.57735:
@@ -195,12 +190,12 @@ class EPA:
         t2 = min_normal.cross(t1)
 
         data = {}
+        data["seperation_point"] = min_normal * min_distance
         data["contact_points"] = contact_points
         data["local_contact_points"] = local_contact_points
         data["tangents"] = [t1, t2]
         data["min_normal"] = min_normal
         data["min_distance"] = min_distance
-        data["seperation_point"] = min_normal * min_distance
 
 
         return data

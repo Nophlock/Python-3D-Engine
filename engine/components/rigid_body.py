@@ -15,6 +15,9 @@ class RigidBody(physics_component.PhysicsComponent):
         self.mass = 1.0
         self.inv_mass = 1.0 / self.mass
 
+        self.damping = 1.0
+        self.friction = 0.01
+
         self.col_shape.calculate_inertia_tensor(self.mass)
 
         self.world_rotational_inertia = self.col_shape.get_inertia_tensor()
@@ -44,6 +47,9 @@ class RigidBody(physics_component.PhysicsComponent):
         self.force_accumulator = self.force_accumulator + f
         self.torque_accumulator = self.torque_accumulator + (position - self.world_centroid).cross(f)
 
+        #if self.force_accumulator.get_len() > 0.1:
+        #    self.awake = True
+
     def apply_central_force(self, force):
         self.apply_force(force, self.world_centroid)
 
@@ -64,6 +70,10 @@ class RigidBody(physics_component.PhysicsComponent):
 
 
     def fixed_update(self, dt):
+
+        if self.awake == False:
+            return
+
         transform = self.attached_entity.transform
 
         self.linear_velocity = self.linear_velocity + self.force_accumulator * self.inv_mass * dt
@@ -88,16 +98,18 @@ class RigidBody(physics_component.PhysicsComponent):
     #based on https://en.wikipedia.org/wiki/Collision_response#Impulse-Based_Reaction_Model
     def eval_collision(self, entity, collision_data):
 
-        #calulate impulse
+        #still a hack (introduces heavy jitttering) but at least the object is not falling through things
+        self.world_centroid = self.world_centroid - collision_data["seperation_point"] * collision_data["force_distribution"]
+
+        #calulate impact impulse
         n = collision_data["min_normal"]
         v = self.get_point_velocity( collision_data["contact_points"][0] )
         vrel = n.dot(v)
         threshold = 0.01
 
-        if vrel < threshold:
+        if vrel < 0.0:
             return
-        elif vrel < -threshold:
-            return
+
 
         r1 = collision_data["contact_points"][0] - self.world_centroid
         e = 0.5#coefficient for wood
@@ -105,32 +117,34 @@ class RigidBody(physics_component.PhysicsComponent):
         numerator = -(1.0+e)*vrel
         denominator = self.inv_mass + (self.inv_world_rotational_inertia.mul_vec3(r1.cross(n)).cross(r1)).dot(n)
 
-        j = numerator / denominator
+        j = (numerator / denominator) * collision_data["force_distribution"]
         force = n * j
-
-
 
         self.linear_velocity = self.linear_velocity + (force * self.inv_mass)
         self.angular_velocity = self.angular_velocity + ( self.inv_world_rotational_inertia.mul_vec3(r1.cross(force)))
 
-        #friction calulation (static needs to be bigger than dynamic)
-        #jr_m = jr
-        #f_s = 0.02
-        #f_d = 0.01
-        #t = collision_data["tangents"][0]
+        #friction calulation
+        t = (v - (n * v.dot(n)) ).get_normalized()
 
+        numerator = -t.dot(v)
+        denomniator = self.inv_mass + (self.inv_world_rotational_inertia.mul_vec3(r1.cross(t)).cross(r1)).dot(t)
 
-        #js = jr_m * f_s
-        #jd = jr_m * f_d
+        jt = (numerator / denominator) * collision_data["force_distribution"]
 
-        #jf = 0
+        if abs(jt) < 0.001:
+            return
 
-        #if v.dot(t) == 0 and v.dot(t)*self.mass < js:
-        #    print("static")
-        #    jf = -(v.dot(t) * self.mass)
-        #else:
-        #    print("dynamic")
-        #    jf = -jd
+        friction = math.sqrt(self.friction)
+
+        if jt < j * friction:
+            jt = j * friction
+        elif jt > -j * friction:
+            jt = -j * friction
+
+        tan_force = t * jt
+
+        self.linear_velocity = self.linear_velocity + (tan_force * self.inv_mass)
+        self.angular_velocity = self.angular_velocity + ( self.inv_world_rotational_inertia.mul_vec3(r1.cross(tan_force)))
 
 
 
