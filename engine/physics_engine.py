@@ -67,6 +67,9 @@ class PhysicsEngine:
 			comp = ent[1]
 			aabb = comp.get_collision_aabb()
 
+			if comp.get_name() != "RigidBody":
+				continue
+
 			collision_data = []
 
 			for j in range( len(self.physics_entities) ):
@@ -103,7 +106,13 @@ class PhysicsEngine:
 						ent[2] = False
 
 
+		#in the second step we integrate all our forces
+		for i in range(len(self.physics_entities)):
 
+			if self.physics_entities[i][1].get_name() == "RigidBody":
+				self.physics_entities[i][1].integrate(dt)
+
+		#in the thrid step we resolve our collisions and update our forces accordingly
 		for i in range(len(collisions)):
 			col = collisions[i]
 			ent = self.physics_entities[col[0][0]]
@@ -116,4 +125,13 @@ class PhysicsEngine:
 
 			for j in range(col_count):
 				col[j][2]["force_distribution"] = force_distribution
-				ent[1].eval_collision(col[j][1],col[j][2])
+
+				for k in range(1):
+					ent[1].eval_collision(col[j][1],col[j][2], dt)
+
+
+		#in the fourth step we update our positions according to our values
+		for i in range(len(self.physics_entities)):
+
+			if self.physics_entities[i][1].get_name() == "RigidBody":
+				self.physics_entities[i][1].update_positions(dt)

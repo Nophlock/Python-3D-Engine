@@ -16,7 +16,7 @@ class RigidBody(physics_component.PhysicsComponent):
         self.inv_mass = 1.0 / self.mass
 
         self.damping = 1.0
-        self.friction = 0.01
+        self.friction = 0.05
 
         self.col_shape.calculate_inertia_tensor(self.mass)
 
@@ -69,9 +69,11 @@ class RigidBody(physics_component.PhysicsComponent):
         transform.set_local_position(rot.mul_vec3(self.local_centroid.negate()) + self.world_centroid)
 
 
-    def fixed_update(self, dt):
+    def integrate(self, dt):
 
         if self.awake == False:
+            return
+        elif self.inv_mass == 0.0:
             return
 
         transform = self.attached_entity.transform
@@ -79,13 +81,16 @@ class RigidBody(physics_component.PhysicsComponent):
         self.linear_velocity = self.linear_velocity + self.force_accumulator * self.inv_mass * dt
         self.angular_velocity = self.angular_velocity + self.inv_world_rotational_inertia.mul_vec3(self.torque_accumulator) * dt
 
-        #reset force and torque so that an push doesnt happened forever
-        self.force_accumulator = vector3.Vector3()
-        self.torque_accumulator = vector3.Vector3()
-
         #integrate velocity
         self.world_centroid = self.world_centroid + self.linear_velocity * dt
 
+
+    def update_positions(self, dt):
+
+        if self.awake == False:
+            return
+
+        transform = self.attached_entity.transform
         #integrate rotation
         spin = quaternion.Quaternion(self.angular_velocity, 0.0).mul_value(0.5) * transform.rotation
         new_rot = transform.rotation + spin.mul_value(dt)
@@ -93,35 +98,42 @@ class RigidBody(physics_component.PhysicsComponent):
         self.update_position_from_global_centroid()
         transform.set_local_rotation( new_rot.get_normalized() )
 
+        #reset force and torque so that an push doesnt happened forever
+        self.force_accumulator = vector3.Vector3()
+        self.torque_accumulator = vector3.Vector3()
+
 
 
     #based on https://en.wikipedia.org/wiki/Collision_response#Impulse-Based_Reaction_Model
-    def eval_collision(self, entity, collision_data):
-
-        #still a hack (introduces heavy jitttering) but at least the object is not falling through things
-        self.world_centroid = self.world_centroid - collision_data["seperation_point"] * collision_data["force_distribution"]
+    def eval_collision(self, entity, collision_data, dt):
 
         #calulate impact impulse
         n = collision_data["min_normal"]
-        v = self.get_point_velocity( collision_data["contact_points"][0] )
+        v = self.get_point_velocity( collision_data["contact_points"][0] ).negate()
         vrel = n.dot(v)
         threshold = 0.01
 
-        if vrel < 0.0:
+        if vrel > 0.0:
             return
 
-
         r1 = collision_data["contact_points"][0] - self.world_centroid
-        e = 0.5#coefficient for wood
+        e = 0.4#coefficient for wood
+        allow_penetration = 0.01#taken from box2d lite
+        bias_factor = 0.2
 
-        numerator = -(1.0+e)*vrel
+        bias_velocity = -(bias_factor / dt) * min(0.0, -collision_data["min_distance"] + allow_penetration)
+
+
+        numerator = -(1.0+e)*vrel + bias_velocity
         denominator = self.inv_mass + (self.inv_world_rotational_inertia.mul_vec3(r1.cross(n)).cross(r1)).dot(n)
 
         j = (numerator / denominator) * collision_data["force_distribution"]
+        j = max(j, 0.0)
+
         force = n * j
 
-        self.linear_velocity = self.linear_velocity + (force * self.inv_mass)
-        self.angular_velocity = self.angular_velocity + ( self.inv_world_rotational_inertia.mul_vec3(r1.cross(force)))
+        self.linear_velocity = self.linear_velocity - (force * self.inv_mass)
+        self.angular_velocity = self.angular_velocity - ( self.inv_world_rotational_inertia.mul_vec3(r1.cross(force)))
 
         #friction calulation
         t = (v - (n * v.dot(n)) ).get_normalized()
@@ -131,20 +143,14 @@ class RigidBody(physics_component.PhysicsComponent):
 
         jt = (numerator / denominator) * collision_data["force_distribution"]
 
-        if abs(jt) < 0.001:
-            return
 
-        friction = math.sqrt(self.friction)
-
-        if jt < j * friction:
-            jt = j * friction
-        elif jt > -j * friction:
-            jt = -j * friction
+        max_impulse = j * self.friction
+        jt = max(-max_impulse, min(jt, max_impulse))#normaly clamp(jt, -max_impulse, max_impulse)
 
         tan_force = t * jt
 
-        self.linear_velocity = self.linear_velocity + (tan_force * self.inv_mass)
-        self.angular_velocity = self.angular_velocity + ( self.inv_world_rotational_inertia.mul_vec3(r1.cross(tan_force)))
+        self.linear_velocity = self.linear_velocity - (tan_force * self.inv_mass)
+        self.angular_velocity = self.angular_velocity - ( self.inv_world_rotational_inertia.mul_vec3(r1.cross(tan_force)))
 
 
 
